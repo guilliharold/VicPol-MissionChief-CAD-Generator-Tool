@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VicPol CAD Lineup Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1e2530;
+    --border-bright: #2a3545;
+    --accent: #1a6bff;
+    --accent2: #00c8ff;
+    --accent-glow: rgba(26, 107, 255, 0.18);
+    --gold: #f5a623;
+    --red: #ff3b3b;
+    --green: #00e676;
+    --text: #c8d6e8;
+    --text-dim: #5a6a7e;
+    --text-bright: #eaf2ff;
+    --mono: 'Share Tech Mono', monospace;
+    --cond: 'Barlow Condensed', sans-serif;
+    --body: 'Barlow', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(26,107,255,0.12), transparent),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,37,48,0.4) 39px, rgba(30,37,48,0.4) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,37,48,0.4) 39px, rgba(30,37,48,0.4) 40px);
+  }
+
+  header {
+    border-bottom: 1px solid var(--border-bright);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(10,12,16,0.95);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .badge {
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--cond);
+    font-weight: 900;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  header h1 {
+    font-family: var(--cond);
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: 1.5px;
+    color: var(--text-bright);
+    text-transform: uppercase;
+  }
+
+  header h1 span { color: var(--accent2); }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .clock {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent2);
+    letter-spacing: 2px;
+  }
+
+  .main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 28px 24px;
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* === PANEL === */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-header h2 {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .panel-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+  }
+
+  .panel-body { padding: 16px; }
+
+  /* === FORM ELEMENTS === */
+  label {
+    display: block;
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  select, input[type="text"], input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border-bright);
+    color: var(--text-bright);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  select:focus, input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+
+  select option { background: #181c24; }
+
+  .form-row { margin-bottom: 14px; }
+
+  .form-row-inline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  /* === BUTTONS === */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border: none;
+    border-radius: 4px;
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    width: 100%;
+    justify-content: center;
+    font-size: 14px;
+    padding: 11px;
+    letter-spacing: 2px;
+  }
+
+  .btn-primary:hover { background: #2278ff; box-shadow: 0 0 20px rgba(26,107,255,0.4); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border-bright);
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .btn-ghost:hover { color: var(--text-bright); border-color: var(--text-dim); }
+
+  .btn-danger {
+    background: rgba(255,59,59,0.1);
+    color: var(--red);
+    border: 1px solid rgba(255,59,59,0.3);
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .btn-danger:hover { background: rgba(255,59,59,0.2); }
+
+  .btn-export {
+    background: rgba(0,230,118,0.1);
+    color: var(--green);
+    border: 1px solid rgba(0,230,118,0.3);
+    font-size: 12px;
+    padding: 7px 14px;
+  }
+
+  .btn-export:hover { background: rgba(0,230,118,0.2); }
+
+  /* === UNIT TYPES CHECKLIST === */
+  .unit-types-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .unit-type-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .unit-type-item:hover { border-color: var(--border-bright); }
+  .unit-type-item.active { border-color: var(--accent); background: var(--accent-glow); }
+
+  .unit-type-item input[type="checkbox"] { display: none; }
+
+  .unit-type-check {
+    width: 14px; height: 14px;
+    border: 1px solid var(--border-bright);
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .unit-type-item.active .unit-type-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .unit-type-label {
+    font-family: var(--cond);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  /* === LINEUP OUTPUT === */
+  .lineup-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .lineup-controls h2 {
+    font-family: var(--cond);
+    font-weight: 900;
+    font-size: 18px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-bright);
+    flex: 1;
+  }
+
+  .unit-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .unit-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 130px 100px;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+    animation: fadeSlide 0.2s ease;
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .unit-row:hover { border-color: var(--border-bright); }
+
+  .unit-row.highlight { border-color: var(--accent); }
+
+  .unit-cell {
+    padding: 8px 12px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+  }
+
+  .unit-cell:last-child { border-right: none; }
+
+  .unit-callsign {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--accent2);
+    letter-spacing: 1px;
+  }
+
+  .unit-type-badge {
+    display: inline-block;
+    font-family: var(--cond);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 2px;
+    background: var(--surface2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+
+  .unit-desc {
+    font-size: 12px;
+    color: var(--text);
+    font-family: var(--body);
+  }
+
+  .unit-desc strong {
+    color: var(--text-bright);
+    font-family: var(--cond);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+
+  .unit-status {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    font-weight: bold;
+  }
+
+  .status-c1 { background: rgba(0,230,118,0.12); color: var(--green); }
+  .status-c2 { background: rgba(90,106,126,0.2); color: var(--text-dim); }
+  .status-c3 { background: rgba(245,166,35,0.12); color: var(--gold); }
+  .status-c6 { background: rgba(255,59,59,0.1); color: var(--red); }
+
+  .unit-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  /* === SECTION HEADER === */
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 4px;
+    margin-top: 12px;
+  }
+
+  .section-head:first-child { margin-top: 0; }
+
+  .section-head-label {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .section-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    margin-left: auto;
+  }
+
+  /* === EMPTY STATE === */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+  .empty-state h3 {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--text-dim);
+  }
+  .empty-state p { font-size: 13px; }
+
+  /* === EXPORT MODAL === */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    width: 600px;
+    max-width: 95vw;
+    max-height: 80vh;
+    overflow: auto;
+  }
+
+  .modal-head {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-head h3 {
+    font-family: var(--cond);
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: var(--text-bright);
+  }
+
+  .modal-body { padding: 20px; }
+
+  .export-text {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-bright);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  /* === STATUS SELECTOR === */
+  .status-select-wrap { position: relative; }
+
+  .status-select-wrap select {
+    padding-right: 30px;
+    border-radius: 3px;
+    font-size: 11px;
+    padding: 3px 24px 3px 8px;
+  }
+
+  /* === MISC === */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 14px 0;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    background: rgba(0,200,255,0.08);
+    color: var(--accent2);
+    border: 1px solid rgba(0,200,255,0.2);
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .info-row:last-child { border-bottom: none; }
+  .info-key { color: var(--text-dim); font-family: var(--cond); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+  .info-val { color: var(--text-bright); font-family: var(--mono); font-size: 12px; }
+
+  .shift-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+
+  .shift-tab {
+    flex: 1;
+    padding: 7px;
+    text-align: center;
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    background: var(--bg);
+    color: var(--text-dim);
+    transition: all 0.15s;
+  }
+
+  .shift-tab:hover { color: var(--text); border-color: var(--border-bright); }
+  .shift-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* tooltip */
+  [data-tip] { position: relative; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: var(--text);
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+    pointer-events: none;
+    border: 1px solid var(--border-bright);
+    z-index: 200;
+    font-family: var(--body);
+  }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .unit-row { grid-template-columns: 120px 1fr 100px; }
+    .unit-row .unit-cell:nth-child(4) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">VicPol</div>
+  <h1>CAD <span>Lineup</span> Generator</h1>
+  <div class="header-right">
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<div class="main">
+  <!-- LEFT PANEL: Config -->
+  <div>
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-header">
+        <div class="panel-dot"></div>
+        <h2>Station Config</h2>
+      </div>
+      <div class="panel-body">
+        <div class="form-row">
+          <label>Region</label>
+          <select id="regionSelect" onchange="onRegionChange()">
+            <option value="">— Select Region —</option>
+            <option value="N">North Metro (N)</option>
+            <option value="S">South Metro (S)</option>
+            <option value="E">East Metro (E)</option>
+            <option value="W">Western (W)</option>
+            <option value="custom">Custom / Rural</option>
+          </select>
+        </div>
+        <div class="form-row" id="stationRow">
+          <label>Station</label>
+          <select id="stationSelect" onchange="onStationChange()">
+            <option value="">— Select Station —</option>
+          </select>
+        </div>
+        <div class="form-row" id="customCodeRow" style="display:none">
+          <label>Station Code (e.g. ESP, SHP)</label>
+          <input type="text" id="customCode" maxlength="5" placeholder="e.g. SHP" oninput="this.value=this.value.toUpperCase()" />
+        </div>
+        <div class="form-row" id="customNameRow" style="display:none">
+          <label>Station Name</label>
+          <input type="text" id="customName" placeholder="e.g. Shepparton" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-header">
+        <div class="panel-dot" style="background:var(--gold);box-shadow:0 0 6px var(--gold)"></div>
+        <h2>Shift</h2>
+      </div>
+      <div class="panel-body">
+        <div class="shift-tabs">
+          <div class="shift-tab active" onclick="setShift('MS',this)" data-tip="0700–1500">Morning</div>
+          <div class="shift-tab" onclick="setShift('AS',this)" data-tip="1500–2300">Afternoon</div>
+          <div class="shift-tab" onclick="setShift('NS',this)" data-tip="2300–0700">Night</div>
+        </div>
+        <div id="stationInfo" style="font-size:12px;color:var(--text-dim);font-style:italic;">Select a station to see shift info.</div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-header">
+        <div class="panel-dot" style="background:var(--accent2);box-shadow:0 0 6px var(--accent2)"></div>
+        <h2>Unit Types</h2>
+      </div>
+      <div class="panel-body">
+        <div class="unit-types-grid" id="unitTypesGrid"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>
+        <h2>Add Unit</h2>
+      </div>
+      <div class="panel-body">
+        <div class="form-row">
+          <label>Unit Type</label>
+          <select id="unitTypeSelect" onchange="onUnitTypeChange()">
+            <option value="">— Select Type —</option>
+          </select>
+        </div>
+        <div class="form-row" id="subTypeRow" style="display:none">
+          <label>Sub-Type</label>
+          <select id="subTypeSelect"></select>
+        </div>
+        <div class="form-row-inline">
+          <div>
+            <label>Callsign Override</label>
+            <input type="text" id="callsignOverride" placeholder="Auto-generated" maxlength="10" oninput="this.value=this.value.toUpperCase()" />
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="statusSelect">
+              <option value="C1">C1 – On Patrol</option>
+              <option value="C2">C2 – At Station</option>
+              <option value="C3">C3 – Meal Break</option>
+              <option value="C6">C6 – Off Service</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Note (optional)</label>
+          <input type="text" id="unitNote" placeholder="e.g. 2UP crew, single officer…" />
+        </div>
+        <button class="btn btn-primary" onclick="addUnit()">+ Add Unit to Lineup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL: Lineup -->
+  <div>
+    <div class="lineup-controls">
+      <h2 id="lineupTitle">Lineup</h2>
+      <button class="btn btn-ghost" onclick="clearLineup()">Clear All</button>
+      <button class="btn btn-export" onclick="openExport()">⬇ Export</button>
+    </div>
+
+    <div id="lineupOutput">
+      <div class="empty-state">
+        <div class="icon">📡</div>
+        <h3>No Units Assigned</h3>
+        <p>Select a station and add units to build your lineup.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Export Lineup</h3>
+      <button class="btn btn-ghost" onclick="closeExport()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="export-text" id="exportText"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeExport()">Close</button>
+      <button class="btn btn-export" onclick="copyExport()">Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+
+const STATIONS = {
+  N: [
+    { code:'NMN', name:'Melbourne North' },
+    { code:'NMW', name:'Melbourne West' },
+    { code:'NME', name:'Melbourne East' },
+    { code:'NSO', name:'Southbank' },
+    { code:'NCC', name:'Custody Centre' },
+    { code:'NCW', name:'Collingwood' },
+    { code:'NFZ', name:'Fitzroy' },
+    { code:'NRM', name:'Richmond' },
+    { code:'NAL', name:'Altona' },
+    { code:'NLV', name:'Laverton' },
+    { code:'NWN', name:'Williamstown' },
+    { code:'NFC', name:'Footscray' },
+    { code:'NWB', name:'Werribee' },
+    { code:'NWM', name:'Wyndham North' },
+    { code:'NKD', name:'Keilor Downs' },
+    { code:'NSS', name:'Sunshine' },
+    { code:'NCL', name:'Caroline Springs' },
+    { code:'NMT', name:'Melton' },
+    { code:'NBS', name:'Broadmeadows' },
+    { code:'NCI', name:'Craigieburn' },
+    { code:'NSB', name:'Sunbury' },
+    { code:'NBW', name:'Brunswick' },
+    { code:'NFK', name:'Fawkner' },
+    { code:'NAH', name:'Avondale Heights' },
+    { code:'NES', name:'Essendon' },
+    { code:'NMO', name:'Moonee Ponds' },
+    { code:'NFM', name:'Flemington' },
+    { code:'NNC', name:'Northcote' },
+    { code:'NPS', name:'Preston' },
+    { code:'NRR', name:'Reservoir' },
+    { code:'NDA', name:'Mernda' },
+    { code:'NEP', name:'Epping' },
+    { code:'NMP', name:'Mill Park' },
+    { code:'NWS', name:'Whittlesea' },
+    { code:'NGB', name:'Greensborough' },
+    { code:'NHL', name:'Heidelberg' },
+    { code:'NDD', name:'Diamond Creek' },
+    { code:'NEM', name:'Eltham' },
+    { code:'NHB', name:'Hurstbridge' },
+  ],
+  S: [
+    { code:'SSK', name:'St Kilda' },
+    { code:'SSM', name:'South Melbourne' },
+    { code:'SMV', name:'Malvern' },
+    { code:'SPH', name:'Prahran' },
+    { code:'SBY', name:'Bayside' },
+    { code:'SCF', name:'Caulfield' },
+    { code:'SCH', name:'Cheltenham' },
+    { code:'SMB', name:'Moorabbin' },
+    { code:'SMD', name:'Mordialloc' },
+    { code:'SCS', name:'Chelsea' },
+    { code:'SDG', name:'Dandenong' },
+    { code:'SSV', name:'Springvale' },
+    { code:'SBP', name:'Bunyip' },
+    { code:'SED', name:'Emerald' },
+    { code:'SKR', name:'Koo Wee Rup' },
+    { code:'SLL', name:'Lang Lang' },
+    { code:'SPK', name:'Pakenham' },
+    { code:'SCN', name:'Cranbourne' },
+    { code:'SEN', name:'Endeavour Hills' },
+    { code:'SNW', name:'Narre Warren' },
+    { code:'SCD', name:'Carrum Downs' },
+    { code:'SFK', name:'Frankston' },
+    { code:'SDA', name:'Dromana' },
+    { code:'SRO', name:'Rosebud' },
+    { code:'SRY', name:'Rye' },
+    { code:'SSO', name:'Sorrento' },
+    { code:'SHS', name:'Hastings' },
+    { code:'SMT', name:'Mornington' },
+  ],
+  E: [
+    { code:'EAT', name:'Ashburton' },
+    { code:'EBB', name:'Booroondara' },
+    { code:'ECL', name:'Camberwell' },
+    { code:'EDC', name:'Doncaster' },
+    { code:'EWY', name:'Warrandyte' },
+    { code:'EBD', name:'Burwood' },
+    { code:'EBH', name:'Box Hill' },
+    { code:'EFH', name:'Forest Hill' },
+    { code:'ENG', name:'Nunawading' },
+    { code:'ECY', name:'Clayton' },
+    { code:'EGW', name:'Glen Waverley' },
+    { code:'EMW', name:'Mount Waverley' },
+    { code:'EOL', name:'Oakleigh' },
+    { code:'EKX', name:'Knox' },
+    { code:'ERV', name:'Rowville' },
+    { code:'EBO', name:'Boronia' },
+    { code:'ECD', name:'Croydon' },
+    { code:'ERW', name:'Ringwood' },
+    { code:'ELY', name:'Lilydale' },
+    { code:'EHV', name:'Healesville' },
+    { code:'EMB', name:'Mooroolbark' },
+    { code:'EME', name:'Mount Evelyn' },
+    { code:'EMK', name:'Monbulk' },
+    { code:'EBV', name:'Belgrave' },
+    { code:'EOD', name:'Olinda' },
+    { code:'EWR', name:'Warburton' },
+    { code:'EYJ', name:'Yarra Junction' },
+    { code:'EYG', name:'Yarra Glen' },
+  ],
+  W: [
+    { code:'WCO', name:'Corio' },
+    { code:'WLA', name:'Lara' },
+    { code:'WGL', name:'Geelong' },
+    { code:'WDS', name:'Drysdale' },
+    { code:'WBR', name:'Bellarine' },
+    { code:'WPA', name:'Portarlington' },
+    { code:'WQC', name:'Queenscliff' },
+    { code:'WWP', name:'Waurn Ponds' },
+    { code:'WAG', name:'Anglesea' },
+    { code:'WLO', name:'Lorne' },
+    { code:'WTQ', name:'Torquay' },
+    { code:'WWI', name:'Winchelsea' },
+  ]
+};
+
+// Station backing info lookup
+const STATION_INFO = {
+  NMN: { div:'N101', backed:'NMW', psa:'NML', ciu:'NMN', cri:'NMW', hwp:'NML' },
+  NMW: { div:'N101', backed:'NMN', psa:'NML', ciu:'NMN', cri:'NMW', hwp:'NML' },
+  NME: { div:'N101', backed:'NSO,NCC', psa:'NML', ciu:'NMW', cri:'NMW', hwp:'NML' },
+  NSO: { div:'N101', backed:'NME,NCC', psa:'NML', ciu:'NMW', cri:'NMW', hwp:'NML' },
+  NCC: { div:'N101', backed:'NME,NSO', psa:'NML', ciu:'NMW', cri:'NMW', hwp:'NML' },
+  NCW: { div:'N110', backed:'NFZ,NRM', psa:'NYR', ciu:'NYR', cri:'NMW', hwp:'NYR' },
+  NFZ: { div:'N110', backed:'NCW,NRM', psa:'NYR', ciu:'NYR', cri:'NMW', hwp:'NYR' },
+  NRM: { div:'N110', backed:'NCW,NFZ', psa:'NYR', ciu:'NYR', cri:'NMW', hwp:'NYR' },
+  WCO: { div:'W201', backed:'WLA,WGL', psa:'WGL', ciu:'WGL', cri:'WGL', hwp:'WGL' },
+  WLA: { div:'W201', backed:'WCO,WGL', psa:'WGL', ciu:'WGL', cri:'WGL', hwp:'WGL' },
+  WGL: { div:'W201', backed:'WCO,WLA', psa:'WGL', ciu:'WGL', cri:'WGL', hwp:'WGL' },
+  SSK: { div:'S301', backed:'SSM', psa:'SPP', ciu:'SPP', cri:'SPP', hwp:'SPH' },
+  SSM: { div:'S301', backed:'SSK', psa:'SPP', ciu:'SPP', cri:'SPP', hwp:'SPH' },
+  SMV: { div:'S311', backed:'SPH', psa:'SST', ciu:'SST', cri:'SST', hwp:'SPH' },
+  SPH: { div:'S311', backed:'SMV', psa:'SST', ciu:'SST', cri:'SST', hwp:'SPH' },
+  EBB: { div:'E401', backed:'EAT,ECL', psa:'EBB', ciu:'EBB', cri:'EBB', hwp:'ENG' },
+};
+
+// ============================================================
+// UNIT TYPE DEFINITIONS
+// ============================================================
+
+const UNIT_TYPES = [
+  {
+    id: 'sedan', label: 'Sedan', desc: 'General patrol car',
+    rangeStart: 200, rangeEnd: 299,
+    shiftNums: { MS: [207], AS: [203], NS: [211] },
+    note: 'Station patrol unit'
+  },
+  {
+    id: 'van', label: 'Div Van', desc: 'Divisional Van',
+    rangeStart: 300, rangeEnd: 399,
+    shiftNums: { MS: [307], AS: [303], NS: [311] },
+    note: 'Divisional van – cage'
+  },
+  {
+    id: 'rru', label: 'RRU', desc: 'Regional Response Unit',
+    rangeStart: 440, rangeEnd: 449,
+    shiftNums: { MS: [441], AS: [442], NS: [443] },
+    note: 'Supports operational units'
+  },
+  {
+    id: 'socit', label: 'SOCIT', desc: 'Sex / Physical Assault',
+    rangeStart: 470, rangeEnd: 499,
+    shiftNums: { MS: [477], AS: [473], NS: [471] },
+    note: 'South NS: 471',
+    subTypes: [
+      { id:'sgt', label:'SOCIT SGT (450–459)', start:450, end:459 },
+      { id:'ssgt', label:'SOCIT S/SGT (460–469)', start:460, end:469 },
+      { id:'unit', label:'SOCIT Unit (470–499)', start:470, end:499 },
+    ]
+  },
+  {
+    id: 'fviu', label: 'FVIU', desc: 'Family Violence Investigation',
+    rangeStart: 480, rangeEnd: 499,
+    shiftNums: { MS: [487], AS: [483], NS: [] },
+    note: 'NS not staffed',
+    subTypes: [
+      { id:'sgt', label:'FVIU SGT (480)', start:480, end:480 },
+      { id:'ssgt', label:'FVIU S/SGT (490)', start:490, end:490 },
+      { id:'unit', label:'FVIU Unit (481–489)', start:481, end:489 },
+      { id:'court', label:'Court Liaison (499)', start:499, end:499 },
+    ]
+  },
+  {
+    id: 'ciu', label: 'CIU', desc: 'Criminal Investigation',
+    rangeStart: 500, rangeEnd: 599,
+    shiftNums: { MS: [507], AS: [503,520], NS: [541,542,543,544,545,546] },
+    note: 'MS:507 AS:503/520 NS:541–546',
+    subTypes: [
+      { id:'ms', label:'Morning Shift (507)', start:507, end:507 },
+      { id:'as', label:'Afternoon Shift (503/520)', start:503, end:520 },
+      { id:'ns', label:'Night Shift (541–546)', start:541, end:546 },
+      { id:'sup', label:'NS Supervisor (550)', start:550, end:550 },
+    ]
+  },
+  {
+    id: 'hwp', label: 'HWP', desc: 'Highway Patrol',
+    rangeStart: 600, rangeEnd: 699,
+    shiftNums: { MS: [610], AS: [620], NS: [] },
+    note: 'First at accidents with trapped persons',
+    subTypes: [
+      { id:'solo', label:'HWP Solo Mcycle (600–609)', start:600, end:609 },
+      { id:'marked', label:'HWP Marked Car (610–629)', start:610, end:629 },
+      { id:'qcar', label:'HWP Q Car (630–639)', start:630, end:639 },
+      { id:'complaints', label:'HWP Complaints (640–649)', start:640, end:649 },
+      { id:'sgt', label:'HWP SGT (650–659)', start:650, end:659 },
+      { id:'ssgt', label:'HWP S/SGT (660–669)', start:660, end:669 },
+      { id:'special', label:'HWP Special Duties (670–699)', start:670, end:699 },
+    ]
+  },
+  {
+    id: 'foot', label: 'Foot', desc: 'Foot Patrol',
+    rangeStart: 740, rangeEnd: 744,
+    shiftNums: { MS: [741], AS: [742], NS: [] },
+    note: 'Foot patrol units'
+  },
+  {
+    id: 'bike', label: 'Bicycle', desc: 'Bicycle Patrol',
+    rangeStart: 780, rangeEnd: 782,
+    shiftNums: { MS: [781], AS: [782], NS: [] },
+    note: 'Bicycle patrol units'
+  },
+  {
+    id: 'special', label: 'Special', desc: 'Special Duties/Events',
+    rangeStart: 700, rangeEnd: 739,
+    shiftNums: { MS: [701], AS: [702], NS: [] },
+    note: 'Special duties / events'
+  },
+  {
+    id: 'pacer', label: 'PACER', desc: 'Mental Health Unit',
+    rangeStart: 290, rangeEnd: 292,
+    shiftNums: { MS: [290], AS: [291], NS: [292] },
+    note: 'MHaP / PACER response'
+  },
+  {
+    id: 'super', label: 'Supervisor', desc: 'District Patrol SGT',
+    rangeStart: 251, rangeEnd: 252,
+    shiftNums: { MS: [251], AS: [251], NS: [252] },
+    note: '251 or 252'
+  },
+  {
+    id: 'stnsgt', label: 'Stn SGT', desc: 'Station Sergeant (260)',
+    rangeStart: 260, rangeEnd: 260,
+    shiftNums: { MS: [260], AS: [260], NS: [] },
+    note: 'Usually remains at station'
+  },
+  {
+    id: 'divsup', label: 'Div Sup', desc: 'Divisional Supervisor S/SGT',
+    rangeStart: 265, rangeEnd: 265,
+    shiftNums: { MS: [265], AS: [], NS: [] },
+    note: 'Usually 0600/0700 start'
+  },
+  {
+    id: 'dutyoff', label: 'Duty Off', desc: 'Duty Officer (Inspector)',
+    rangeStart: 150, rangeEnd: 150,
+    shiftNums: { MS: [150], AS: [150], NS: [150] },
+    note: 'Region-wide response'
+  },
+  {
+    id: 'cri', label: 'Crime Desk', desc: 'Crime Desk Unit',
+    rangeStart: 571, rangeEnd: 579,
+    shiftNums: { MS: [577], AS: [573], NS: [] },
+    note: 'Forensic / scene',
+    subTypes: [
+      { id:'sgt', label:'Crime Desk SGT (571–572)', start:571, end:572 },
+      { id:'unit', label:'Crime Desk Unit (573–579)', start:573, end:579 },
+    ]
+  },
+  {
+    id: 'dog', label: 'Dog Squad', desc: 'Canine Unit',
+    prefix: 'CAN',
+    rangeStart: 200, rangeEnd: 799,
+    shiftNums: { MS: [211], AS: [213], NS: [215] },
+    note: 'Canine unit'
+  },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+
+let state = {
+  region: '',
+  stationCode: '',
+  stationName: '',
+  shift: 'MS',
+  lineup: [],
+  enabledTypes: new Set(UNIT_TYPES.map(t => t.id)),
+  counterMap: {}
+};
+
+// ============================================================
+// CLOCK
+// ============================================================
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('en-AU', { hour12:false });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ============================================================
+// INIT
+// ============================================================
+
+function initUnitTypesGrid() {
+  const grid = document.getElementById('unitTypesGrid');
+  grid.innerHTML = '';
+  UNIT_TYPES.forEach(t => {
+    const item = document.createElement('div');
+    item.className = 'unit-type-item active';
+    item.dataset.id = t.id;
+    item.innerHTML = `
+      <input type="checkbox" checked>
+      <div class="unit-type-check">✓</div>
+      <div class="unit-type-label">${t.label}<br><span style="font-weight:400;font-size:10px;color:var(--text-dim)">${t.desc}</span></div>
+    `;
+    item.onclick = () => toggleUnitType(t.id, item);
+    grid.appendChild(item);
+  });
+}
+
+function toggleUnitType(id, el) {
+  if (state.enabledTypes.has(id)) {
+    state.enabledTypes.delete(id);
+    el.classList.remove('active');
+    el.querySelector('.unit-type-check').textContent = '';
+  } else {
+    state.enabledTypes.add(id);
+    el.classList.add('active');
+    el.querySelector('.unit-type-check').textContent = '✓';
+  }
+  populateUnitTypeSelect();
+}
+
+function populateUnitTypeSelect() {
+  const sel = document.getElementById('unitTypeSelect');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Select Type —</option>';
+  UNIT_TYPES.filter(t => state.enabledTypes.has(t.id)).forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = `${t.label} — ${t.desc}`;
+    sel.appendChild(opt);
+  });
+  sel.value = cur;
+  onUnitTypeChange();
+}
+
+// ============================================================
+// REGION/STATION
+// ============================================================
+
+function onRegionChange() {
+  const region = document.getElementById('regionSelect').value;
+  state.region = region;
+
+  const stationSel = document.getElementById('stationSelect');
+  const customRow = document.getElementById('customCodeRow');
+  const customNameRow = document.getElementById('customNameRow');
+
+  stationSel.innerHTML = '<option value="">— Select Station —</option>';
+  state.stationCode = '';
+  state.stationName = '';
+
+  if (region === 'custom') {
+    document.getElementById('stationRow').style.display = 'none';
+    customRow.style.display = 'block';
+    customNameRow.style.display = 'block';
+  } else {
+    document.getElementById('stationRow').style.display = 'block';
+    customRow.style.display = 'none';
+    customNameRow.style.display = 'none';
+
+    if (STATIONS[region]) {
+      STATIONS[region].forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.code;
+        opt.textContent = `${s.name} (${s.code})`;
+        stationSel.appendChild(opt);
+      });
+    }
+  }
+  updateLineupTitle();
+}
+
+function onStationChange() {
+  const code = document.getElementById('stationSelect').value;
+  if (!code) { state.stationCode = ''; state.stationName = ''; return; }
+
+  const allStations = Object.values(STATIONS).flat();
+  const found = allStations.find(s => s.code === code);
+  state.stationCode = code;
+  state.stationName = found ? found.name : code;
+  state.counterMap = {};
+
+  updateStationInfo();
+  updateLineupTitle();
+}
+
+function getStationCode() {
+  if (state.region === 'custom') {
+    return document.getElementById('customCode').value.trim().toUpperCase() || 'XXX';
+  }
+  return state.stationCode || 'XXX';
+}
+
+function getStationName() {
+  if (state.region === 'custom') {
+    return document.getElementById('customName').value.trim() || 'Unknown Station';
+  }
+  return state.stationName || 'Unknown Station';
+}
+
+function updateStationInfo() {
+  const info = STATION_INFO[state.stationCode];
+  const el = document.getElementById('stationInfo');
+  if (!info) {
+    el.textContent = 'Station details not available.';
+    return;
+  }
+  el.innerHTML = `
+    <div style="color:var(--text-bright);margin-bottom:8px;font-style:normal;font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:1px">STATION LINKS</div>
+    <div class="info-row"><span class="info-key">Division</span><span class="info-val">${info.div}</span></div>
+    <div class="info-row"><span class="info-key">Backed By</span><span class="info-val">${info.backed || '—'}</span></div>
+    <div class="info-row"><span class="info-key">PSA</span><span class="info-val">${info.psa}</span></div>
+    <div class="info-row"><span class="info-key">CIU</span><span class="info-val">${info.ciu}</span></div>
+    <div class="info-row"><span class="info-key">CRI</span><span class="info-val">${info.cri}</span></div>
+    <div class="info-row"><span class="info-key">HWP</span><span class="info-val">${info.hwp}</span></div>
+  `;
+}
+
+function updateLineupTitle() {
+  const code = getStationCode();
+  const name = getStationName();
+  const shiftLabels = { MS:'Morning', AS:'Afternoon', NS:'Night' };
+  document.getElementById('lineupTitle').textContent =
+    code !== 'XXX' ? `${name} — ${shiftLabels[state.shift]} Shift` : 'Lineup';
+}
+
+// ============================================================
+// SHIFT
+// ============================================================
+
+function setShift(shift, el) {
+  state.shift = shift;
+  document.querySelectorAll('.shift-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  state.counterMap = {};
+  updateLineupTitle();
+}
+
+// ============================================================
+// UNIT TYPE SELECT
+// ============================================================
+
+function onUnitTypeChange() {
+  const typeId = document.getElementById('unitTypeSelect').value;
+  const type = UNIT_TYPES.find(t => t.id === typeId);
+  const subRow = document.getElementById('subTypeRow');
+  const subSel = document.getElementById('subTypeSelect');
+
+  if (type && type.subTypes) {
+    subRow.style.display = 'block';
+    subSel.innerHTML = '';
+    type.subTypes.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.label;
+      subSel.appendChild(opt);
+    });
+  } else {
+    subRow.style.display = 'none';
+  }
+
+  // Auto-suggest callsign
+  if (type) {
+    const cs = autoCallsign(type);
+    document.getElementById('callsignOverride').placeholder = cs || 'Auto-generated';
+  }
+}
+
+// ============================================================
+// CALLSIGN GENERATION
+// ============================================================
+
+function autoCallsign(type, subId) {
+  const stCode = getStationCode();
+  if (!stCode || stCode === 'XXX') return '';
+
+  // Special prefix units
+  if (type.prefix) return `${type.prefix}${getNextNum(type.id, type.rangeStart, type.rangeEnd)}`;
+
+  const shift = state.shift;
+
+  let rangeStart = type.rangeStart;
+  let rangeEnd = type.rangeEnd;
+
+  // If has subtypes, use subtype range
+  if (type.subTypes && subId) {
+    const sub = type.subTypes.find(s => s.id === subId);
+    if (sub) { rangeStart = sub.start; rangeEnd = sub.end; }
+  }
+
+  // Prefer shift-specific numbers
+  const shiftNums = type.shiftNums ? (type.shiftNums[shift] || []) : [];
+  let num;
+
+  if (shiftNums.length > 0) {
+    // Find first unused shift num
+    num = shiftNums.find(n => !isNumUsed(stCode + n));
+    if (!num) num = getNextNum(type.id + (subId||''), rangeStart, rangeEnd);
+  } else {
+    num = getNextNum(type.id + (subId||''), rangeStart, rangeEnd);
+  }
+
+  return `${stCode}${num}`;
+}
+
+function isNumUsed(callsign) {
+  return state.lineup.some(u => u.callsign === callsign);
+}
+
+function getNextNum(key, start, end) {
+  if (!state.counterMap[key]) state.counterMap[key] = start;
+  let n = state.counterMap[key];
+  // skip used
+  while (isNumUsed(getStationCode() + n) && n <= end) n++;
+  state.counterMap[key] = n + 1;
+  return Math.min(n, end);
+}
+
+// ============================================================
+// ADD UNIT
+// ============================================================
+
+function addUnit() {
+  const typeId = document.getElementById('unitTypeSelect').value;
+  if (!typeId) { alert('Please select a unit type.'); return; }
+
+  const stCode = getStationCode();
+  if (stCode === 'XXX') { alert('Please select or enter a station code first.'); return; }
+
+  const type = UNIT_TYPES.find(t => t.id === typeId);
+  const subId = type.subTypes ? document.getElementById('subTypeSelect').value : null;
+  const subType = subId ? type.subTypes.find(s => s.id === subId) : null;
+
+  let callsign = document.getElementById('callsignOverride').value.trim().toUpperCase();
+  if (!callsign) callsign = autoCallsign(type, subId);
+  if (!callsign) callsign = stCode + type.rangeStart;
+
+  const status = document.getElementById('statusSelect').value;
+  const note = document.getElementById('unitNote').value.trim();
+
+  const unit = {
+    id: Date.now() + Math.random(),
+    callsign,
+    typeId,
+    typeName: type.label,
+    typeDesc: subType ? subType.label : type.desc,
+    status,
+    note,
+    shift: state.shift
+  };
+
+  state.lineup.push(unit);
+  renderLineup();
+
+  // Reset
+  document.getElementById('callsignOverride').value = '';
+  document.getElementById('unitNote').value = '';
+}
+
+// ============================================================
+// RENDER LINEUP
+// ============================================================
+
+function renderLineup() {
+  const el = document.getElementById('lineupOutput');
+  if (state.lineup.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="icon">📡</div>
+      <h3>No Units Assigned</h3>
+      <p>Select a station and add units to build your lineup.</p>
+    </div>`;
+    return;
+  }
+
+  const statusLabels = { C1:'C1 – PATROL', C2:'C2 – STATION', C3:'C3 – MEAL', C6:'C6 – OFF SVC' };
+  const statusClasses = { C1:'status-c1', C2:'status-c2', C3:'status-c3', C6:'status-c6' };
+
+  // Group by type
+  const groups = {};
+  state.lineup.forEach(u => {
+    if (!groups[u.typeId]) groups[u.typeId] = [];
+    groups[u.typeId].push(u);
+  });
+
+  let html = '<div class="unit-grid">';
+
+  const order = UNIT_TYPES.map(t => t.id);
+  order.forEach(tid => {
+    if (!groups[tid]) return;
+    const typeLabel = UNIT_TYPES.find(t => t.id === tid)?.label || tid;
+    html += `<div class="section-head">
+      <span class="section-head-label">${typeLabel}</span>
+      <span class="section-count">${groups[tid].length} unit${groups[tid].length!==1?'s':''}</span>
+    </div>`;
+
+    groups[tid].forEach(u => {
+      const statusClass = statusClasses[u.status] || 'status-c1';
+      const statusLabel = statusLabels[u.status] || u.status;
+      html += `<div class="unit-row" id="unit-${u.id}">
+        <div class="unit-cell">
+          <span class="unit-callsign">${u.callsign}</span>
+        </div>
+        <div class="unit-cell">
+          <div>
+            <div class="unit-desc"><strong>${u.typeName}</strong> — ${u.typeDesc}</div>
+            ${u.note ? `<div style="font-size:11px;color:var(--text-dim);margin-top:2px">${u.note}</div>` : ''}
+          </div>
+        </div>
+        <div class="unit-cell">
+          <select class="status-select-wrap" style="background:var(--bg);border:1px solid var(--border-bright);color:var(--text-bright);font-family:var(--mono);font-size:11px;padding:4px 8px;border-radius:3px;width:100%;" 
+            onchange="changeStatus('${u.id}', this.value)">
+            ${['C1','C2','C3','C6'].map(s => `<option value="${s}" ${u.status===s?'selected':''}>${statusLabels[s]}</option>`).join('')}
+          </select>
+        </div>
+        <div class="unit-cell">
+          <div class="unit-actions">
+            <button class="btn btn-danger" onclick="removeUnit('${u.id}')">✕</button>
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function changeStatus(id, status) {
+  const unit = state.lineup.find(u => String(u.id) === String(id));
+  if (unit) { unit.status = status; }
+}
+
+function removeUnit(id) {
+  state.lineup = state.lineup.filter(u => String(u.id) !== String(id));
+  renderLineup();
+}
+
+function clearLineup() {
+  if (!confirm('Clear all units from the lineup?')) return;
+  state.lineup = [];
+  state.counterMap = {};
+  renderLineup();
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+
+function openExport() {
+  if (state.lineup.length === 0) { alert('No units in lineup to export.'); return; }
+
+  const stCode = getStationCode();
+  const stName = getStationName();
+  const shiftLabels = { MS:'Morning', AS:'Afternoon', NS:'Night' };
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-AU');
+  const timeStr = now.toLocaleTimeString('en-AU', { hour12:false });
+
+  const statusLabels = { C1:'C1-PATROL', C2:'C2-STATION', C3:'C3-MEAL', C6:'C6-OFF SVC' };
+
+  let out = `=== VICTORIA POLICE CAD LINEUP ===\n`;
+  out += `Station : ${stName} (${stCode})\n`;
+  out += `Shift   : ${shiftLabels[state.shift]} Shift\n`;
+  out += `Date    : ${dateStr} ${timeStr}\n`;
+  out += `Units   : ${state.lineup.length}\n`;
+  out += `${'='.repeat(44)}\n\n`;
+
+  const groups = {};
+  state.lineup.forEach(u => {
+    if (!groups[u.typeId]) groups[u.typeId] = [];
+    groups[u.typeId].push(u);
+  });
+
+  const order = UNIT_TYPES.map(t => t.id);
+  order.forEach(tid => {
+    if (!groups[tid]) return;
+    const typeLabel = UNIT_TYPES.find(t => t.id === tid)?.label.toUpperCase() || tid;
+    out += `--- ${typeLabel} ---\n`;
+    groups[tid].forEach(u => {
+      const status = statusLabels[u.status] || u.status;
+      const notePart = u.note ? `  [${u.note}]` : '';
+      out += `  ${u.callsign.padEnd(10)} ${u.typeDesc.padEnd(26)} ${status}${notePart}\n`;
+    });
+    out += '\n';
+  });
+
+  // Backed by info
+  const info = STATION_INFO[state.stationCode];
+  if (info) {
+    out += `--- STATION LINKS ---\n`;
+    out += `  Division  : ${info.div}\n`;
+    out += `  Backed By : ${info.backed}\n`;
+    out += `  PSA       : ${info.psa}\n`;
+    out += `  CIU       : ${info.ciu}\n`;
+    out += `  CRI       : ${info.cri}\n`;
+    out += `  HWP       : ${info.hwp}\n`;
+  }
+
+  document.getElementById('exportText').textContent = out;
+  document.getElementById('exportModal').classList.add('open');
+}
+
+function closeExport() {
+  document.getElementById('exportModal').classList.remove('open');
+}
+
+function copyExport() {
+  const text = document.getElementById('exportText').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy to Clipboard', 2000);
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+initUnitTypesGrid();
+populateUnitTypeSelect();
+</script>
+</body>
+</html>
