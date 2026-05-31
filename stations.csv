@@ -3,7 +3,7 @@
 # HOW TO USE THIS FILE
 #
 # Fill in one row per station. Lines starting with # are ignored.
-# The header row (below) must stay exactly as written.
+# The header row must stay exactly as written.
 #
 # COLUMNS
 #   code           Station callsign prefix. Uppercase, 2–5 characters.
@@ -19,22 +19,18 @@
 #                  S = Southern Metro
 #                  E = Eastern
 #                  W = Western
-#                  (Add new regions by also adding an <option> in index.html)
 #
 #   region_label   Full region name shown in the tool (e.g. "Eastern").
 #
-#   division       Division name shown in the dropdown
-#                  (e.g. "Goulburn Valley" or "Geelong (W201)").
+#   division       Division name shown in the dropdown.
 #                  Stations with the same division value are grouped together.
+#                  Use the format "Division Name (DivCode)" e.g. "Goulburn Valley (ED3)"
 #
-#   div_code       Short division reference code (e.g. GV, N101, W201).
-#                  Used for reference only — not shown to the user.
+#   div_code       Short division reference code (e.g. ED3, WD1).
+#                  Used for internal reference only — not shown in the tool.
 #
-#   psa            Code of the Police Service Area station that covers
-#                  this station (e.g. ESP). Leave blank if unknown.
-#
-#   cri            Code of the Crime Desk (CRI) that services this station.
-#                  Leave blank if unknown.
+#   psa            Code of the Police Service Area station covering this station.
+#                  Leave blank if unknown or not applicable.
 #
 #   classification Station size/role. Must be exactly one of:
 #                  small        = Small or outer station
@@ -43,26 +39,54 @@
 #                  regional_hq  = Regional headquarters
 #
 # NOTES
-#   • Leave a field blank rather than writing N/A or — (just leave it empty).
-#   • If psa or cri reference another station, use that station's code value.
+#   • Leave a field blank rather than writing N/A or — (just keep the comma).
 #   • classification controls how many units the tool generates by default.
-#   • Stations are displayed in the order they appear in this file.
+#   • Stations appear in the dropdown in the order they appear in this file.
 # ─────────────────────────────────────────────────────────────────────────────
-code,name,region,region_label,division,div_code,psa,cri,classification
-# ── EASTERN — Goulburn Valley ──────────────────────────────────────────────
-ESP,Shepparton,E,Eastern,Goulburn Valley,GV,ESP,ESP,regional_hq
-EMP,Mooroopna,E,Eastern,Goulburn Valley,GV,ESP,ESP,suburban
-# ── EASTERN — Wangaratta ───────────────────────────────────────────────────
-EWT,Wangaratta,E,Eastern,Wangaratta,WA,EWT,EWT,regional_hq
-ECB,Cobram,E,Eastern,Wangaratta,WA,EWT,EWT,small
-# ── WESTERN — Bendigo ──────────────────────────────────────────────────────
-WBI,Bendigo,W,Western,Bendigo,WBI,WBI,WBI,regional_hq
-WKY,Kyneton,W,Western,Bendigo,WBI,WBI,WBI,small
-WCS,Castlemaine,W,Western,Bendigo,WBI,WBI,WBI,suburban
-# ── WESTERN — Geelong ──────────────────────────────────────────────────────
-WGL,Geelong,W,Western,Geelong (W201),W201,WGL,WGL,regional_hq
-WCO,Corio,W,Western,Geelong (W201),W201,WGL,WGL,suburban
-WLA,Lara,W,Western,Geelong (W201),W201,WGL,WGL,suburban
-WTQ,Torquay,W,Western,Surf Coast (W211),W211,WTQ,WGL,suburban
-WAG,Anglesea,W,Western,Surf Coast (W211),W211,WTQ,WGL,small
-WLO,Lorne,W,Western,Surf Coast (W211),W211,WTQ,WGL,small
+code,name,region,region_label,division,div_code,psa,classification
+# ── NORTH WEST METRO ─────────────────────────────────────────────────────────
+# Melbourne (ND1)
+TBC,Station TBC,N,North West Metro,Melbourne (ND1),ND1,,suburban
+# Westgate (ND2)
+TBC,Station TBC,N,North West Metro,Westgate (ND2),ND2,,suburban
+# Brimbank (ND3)
+TBC,Station TBC,N,North West Metro,Brimbank (ND3),ND3,,suburban
+# Fawkner (ND4)
+TBC,Station TBC,N,North West Metro,Fawkner (ND4),ND4,,suburban
+# Diamond Creek (ND5)
+TBC,Station TBC,N,North West Metro,Diamond Creek (ND5),ND5,,suburban
+# ── SOUTHERN METRO ───────────────────────────────────────────────────────────
+# Prahran (SD1)
+TBC,Station TBC,S,Southern Metro,Prahran (SD1),SD1,,suburban
+# Moorabbin (SD2)
+TBC,Station TBC,S,Southern Metro,Moorabbin (SD2),SD2,,suburban
+# Dandenong (SD3)
+TBC,Station TBC,S,Southern Metro,Dandenong (SD3),SD3,,suburban
+# Frankston (SD4)
+TBC,Station TBC,S,Southern Metro,Frankston (SD4),SD4,,suburban
+# ── EASTERN ──────────────────────────────────────────────────────────────────
+# Nunawading (ED1)
+TBC,Station TBC,E,Eastern,Nunawading (ED1),ED1,,suburban
+# Knox (ED2)
+TBC,Station TBC,E,Eastern,Knox (ED2),ED2,,suburban
+# Goulburn Valley (ED3)
+TBC,Station TBC,E,Eastern,Goulburn Valley (ED3),ED3,,suburban
+# Wangaratta (ED4)
+TBC,Station TBC,E,Eastern,Wangaratta (ED4),ED4,,suburban
+# Morwell (ED5)
+TBC,Station TBC,E,Eastern,Morwell (ED5),ED5,,suburban
+# Bairnsdale (ED6)
+TBC,Station TBC,E,Eastern,Bairnsdale (ED6),ED6,,suburban
+# ── WESTERN ──────────────────────────────────────────────────────────────────
+# Geelong (WD1)
+TBC,Station TBC,W,Western,Geelong (WD1),WD1,,suburban
+# Warrnambool (WD2)
+TBC,Station TBC,W,Western,Warrnambool (WD2),WD2,,suburban
+# Ballarat (WD3)
+TBC,Station TBC,W,Western,Ballarat (WD3),WD3,,suburban
+# Horsham (WD4)
+TBC,Station TBC,W,Western,Horsham (WD4),WD4,,suburban
+# Bendigo (WD5)
+TBC,Station TBC,W,Western,Bendigo (WD5),WD5,,suburban
+# Mildura (WD6)
+TBC,Station TBC,W,Western,Mildura (WD6),WD6,,suburban
