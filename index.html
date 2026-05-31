@@ -5,1501 +5,1027 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VicPol CAD Lineup Generator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0c10;
-    --surface: #111318;
-    --surface2: #181c24;
-    --border: #1e2530;
-    --border-bright: #2a3545;
-    --accent: #1a6bff;
-    --accent2: #00c8ff;
-    --accent-glow: rgba(26, 107, 255, 0.18);
-    --gold: #f5a623;
-    --red: #ff3b3b;
-    --green: #00e676;
-    --text: #c8d6e8;
-    --text-dim: #5a6a7e;
-    --text-bright: #eaf2ff;
-    --mono: 'Share Tech Mono', monospace;
-    --cond: 'Barlow Condensed', sans-serif;
-    --body: 'Barlow', sans-serif;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--body);
-    min-height: 100vh;
-    background-image:
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(26,107,255,0.12), transparent),
-      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,37,48,0.4) 39px, rgba(30,37,48,0.4) 40px),
-      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,37,48,0.4) 39px, rgba(30,37,48,0.4) 40px);
-  }
-
-  header {
-    border-bottom: 1px solid var(--border-bright);
-    padding: 18px 32px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: rgba(10,12,16,0.95);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(12px);
-  }
-
-  .badge {
-    background: var(--accent);
-    color: #fff;
-    font-family: var(--cond);
-    font-weight: 900;
-    font-size: 11px;
-    letter-spacing: 2px;
-    padding: 3px 8px;
-    border-radius: 2px;
-    text-transform: uppercase;
-  }
-
-  header h1 {
-    font-family: var(--cond);
-    font-weight: 900;
-    font-size: 22px;
-    letter-spacing: 1.5px;
-    color: var(--text-bright);
-    text-transform: uppercase;
-  }
-
-  header h1 span { color: var(--accent2); }
-
-  .header-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .clock {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--accent2);
-    letter-spacing: 2px;
-  }
-
-  .main {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 28px 24px;
-    display: grid;
-    grid-template-columns: 340px 1fr;
-    gap: 24px;
-    align-items: start;
-  }
-
-  /* === PANEL === */
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-  }
-
-  .panel-header {
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .panel-header h2 {
-    font-family: var(--cond);
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-dim);
-  }
-
-  .panel-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 6px var(--accent);
-  }
-
-  .panel-body { padding: 16px; }
-
-  /* === FORM ELEMENTS === */
-  label {
-    display: block;
-    font-family: var(--cond);
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-  }
-
-  select, input[type="text"], input[type="number"] {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border-bright);
-    color: var(--text-bright);
-    font-family: var(--mono);
-    font-size: 13px;
-    padding: 8px 12px;
-    border-radius: 4px;
-    outline: none;
-    transition: border-color 0.15s;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-
-  select:focus, input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px var(--accent-glow);
-  }
-
-  select option { background: #181c24; }
-
-  .form-row { margin-bottom: 14px; }
-
-  .form-row-inline {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-
-  /* === BUTTONS === */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 18px;
-    border: none;
-    border-radius: 4px;
-    font-family: var(--cond);
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-    width: 100%;
-    justify-content: center;
-    font-size: 14px;
-    padding: 11px;
-    letter-spacing: 2px;
-  }
-
-  .btn-primary:hover { background: #2278ff; box-shadow: 0 0 20px rgba(26,107,255,0.4); }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--text-dim);
-    border: 1px solid var(--border-bright);
-    font-size: 11px;
-    padding: 5px 10px;
-  }
-
-  .btn-ghost:hover { color: var(--text-bright); border-color: var(--text-dim); }
-
-  .btn-danger {
-    background: rgba(255,59,59,0.1);
-    color: var(--red);
-    border: 1px solid rgba(255,59,59,0.3);
-    font-size: 11px;
-    padding: 4px 8px;
-  }
-
-  .btn-danger:hover { background: rgba(255,59,59,0.2); }
-
-  .btn-export {
-    background: rgba(0,230,118,0.1);
-    color: var(--green);
-    border: 1px solid rgba(0,230,118,0.3);
-    font-size: 12px;
-    padding: 7px 14px;
-  }
-
-  .btn-export:hover { background: rgba(0,230,118,0.2); }
-
-  /* === UNIT TYPES CHECKLIST === */
-  .unit-types-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
-
-  .unit-type-item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 6px 10px;
-    cursor: pointer;
-    transition: all 0.15s;
-    user-select: none;
-  }
-
-  .unit-type-item:hover { border-color: var(--border-bright); }
-  .unit-type-item.active { border-color: var(--accent); background: var(--accent-glow); }
-
-  .unit-type-item input[type="checkbox"] { display: none; }
-
-  .unit-type-check {
-    width: 14px; height: 14px;
-    border: 1px solid var(--border-bright);
-    border-radius: 2px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px;
-    flex-shrink: 0;
-    transition: all 0.15s;
-  }
-
-  .unit-type-item.active .unit-type-check {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  .unit-type-label {
-    font-family: var(--cond);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    color: var(--text);
-    line-height: 1.2;
-  }
-
-  /* === LINEUP OUTPUT === */
-  .lineup-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-
-  .lineup-controls h2 {
-    font-family: var(--cond);
-    font-weight: 900;
-    font-size: 18px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-bright);
-    flex: 1;
-  }
-
-  .unit-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .unit-row {
-    display: grid;
-    grid-template-columns: 140px 1fr 130px 100px;
-    gap: 0;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    transition: border-color 0.15s;
-    animation: fadeSlide 0.2s ease;
-  }
-
-  @keyframes fadeSlide {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .unit-row:hover { border-color: var(--border-bright); }
-
-  .unit-row.highlight { border-color: var(--accent); }
-
-  .unit-cell {
-    padding: 8px 12px;
-    border-right: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    background: var(--surface);
-  }
-
-  .unit-cell:last-child { border-right: none; }
-
-  .unit-callsign {
-    font-family: var(--mono);
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--accent2);
-    letter-spacing: 1px;
-  }
-
-  .unit-type-badge {
-    display: inline-block;
-    font-family: var(--cond);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 2px 6px;
-    border-radius: 2px;
-    background: var(--surface2);
-    color: var(--text-dim);
-    border: 1px solid var(--border);
-  }
-
-  .unit-desc {
-    font-size: 12px;
-    color: var(--text);
-    font-family: var(--body);
-  }
-
-  .unit-desc strong {
-    color: var(--text-bright);
-    font-family: var(--cond);
-    font-size: 13px;
-    letter-spacing: 0.5px;
-  }
-
-  .unit-status {
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 2px;
-    letter-spacing: 1px;
-    font-weight: bold;
-  }
-
-  .status-c1 { background: rgba(0,230,118,0.12); color: var(--green); }
-  .status-c2 { background: rgba(90,106,126,0.2); color: var(--text-dim); }
-  .status-c3 { background: rgba(245,166,35,0.12); color: var(--gold); }
-  .status-c6 { background: rgba(255,59,59,0.1); color: var(--red); }
-
-  .unit-actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    justify-content: flex-end;
-  }
-
-  /* === SECTION HEADER === */
-  .section-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 12px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    margin-bottom: 4px;
-    margin-top: 12px;
-  }
-
-  .section-head:first-child { margin-top: 0; }
-
-  .section-head-label {
-    font-family: var(--cond);
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--text-dim);
-  }
-
-  .section-count {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent);
-    margin-left: auto;
-  }
-
-  /* === EMPTY STATE === */
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-dim);
-  }
-
-  .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
-  .empty-state h3 {
-    font-family: var(--cond);
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    color: var(--text-dim);
-  }
-  .empty-state p { font-size: 13px; }
-
-  /* === EXPORT MODAL === */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border-bright);
-    border-radius: 8px;
-    width: 600px;
-    max-width: 95vw;
-    max-height: 80vh;
-    overflow: auto;
-  }
-
-  .modal-head {
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .modal-head h3 {
-    font-family: var(--cond);
-    font-weight: 700;
-    letter-spacing: 2px;
-    font-size: 14px;
-    text-transform: uppercase;
-    color: var(--text-bright);
-  }
-
-  .modal-body { padding: 20px; }
-
-  .export-text {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 16px;
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text-bright);
-    line-height: 1.7;
-    white-space: pre-wrap;
-    word-break: break-all;
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  .modal-footer {
-    padding: 14px 20px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-  }
-
-  /* === STATUS SELECTOR === */
-  .status-select-wrap { position: relative; }
-
-  .status-select-wrap select {
-    padding-right: 30px;
-    border-radius: 3px;
-    font-size: 11px;
-    padding: 3px 24px 3px 8px;
-  }
-
-  /* === MISC === */
-  .divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 14px 0;
-  }
-
-  .tag {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 1px;
-    padding: 1px 6px;
-    border-radius: 2px;
-    background: rgba(0,200,255,0.08);
-    color: var(--accent2);
-    border: 1px solid rgba(0,200,255,0.2);
-  }
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 0;
-    font-size: 12px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .info-row:last-child { border-bottom: none; }
-  .info-key { color: var(--text-dim); font-family: var(--cond); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
-  .info-val { color: var(--text-bright); font-family: var(--mono); font-size: 12px; }
-
-  .shift-tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 14px;
-  }
-
-  .shift-tab {
-    flex: 1;
-    padding: 7px;
-    text-align: center;
-    font-family: var(--cond);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    cursor: pointer;
-    background: var(--bg);
-    color: var(--text-dim);
-    transition: all 0.15s;
-  }
-
-  .shift-tab:hover { color: var(--text); border-color: var(--border-bright); }
-  .shift-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-  /* tooltip */
-  [data-tip] { position: relative; }
-  [data-tip]:hover::after {
-    content: attr(data-tip);
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: var(--text);
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 3px;
-    white-space: nowrap;
-    pointer-events: none;
-    border: 1px solid var(--border-bright);
-    z-index: 200;
-    font-family: var(--body);
-  }
-
-  @media (max-width: 900px) {
-    .main { grid-template-columns: 1fr; }
-    .unit-row { grid-template-columns: 120px 1fr 100px; }
-    .unit-row .unit-cell:nth-child(4) { display: none; }
-  }
+:root{
+  --navy:#0b1622;--navy2:#14243a;--blue:#1055cc;--gold:#f0a500;--gold-d:#b87b00;
+  --silver:#c8d4e2;--bg:#f2f4f7;--surface:#ffffff;--surface2:#eef1f6;
+  --border:#d0d8e4;--text:#1a2332;--mid:#4a5a72;--dim:#8898aa;
+  --mono:'Roboto Mono',monospace;--head:'Oswald',sans-serif;--body:'Source Sans 3',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);background:var(--bg);color:var(--text);font-size:15px;min-height:100vh}
+
+/* HEADER */
+.site-header{background:var(--navy);color:#fff;display:flex;align-items:center;height:58px;border-bottom:3px solid var(--gold)}
+.hdr-badge{background:var(--gold);color:var(--navy);font-family:var(--head);font-size:13px;font-weight:700;letter-spacing:2px;padding:0 22px;height:100%;display:flex;align-items:center;white-space:nowrap;text-transform:uppercase}
+.hdr-title{padding:0 24px;font-family:var(--head);font-size:18px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--silver)}
+.hdr-title strong{color:#fff;font-weight:700}
+.hdr-right{margin-left:auto;padding-right:24px;font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.35);letter-spacing:1px}
+
+/* LAYOUT */
+.wrap{max-width:960px;margin:0 auto;padding:32px 20px}
+
+/* WIZARD TABS */
+.steps{display:flex;margin-bottom:32px;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--surface)}
+.step-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 8px;font-family:var(--head);font-size:14px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--dim);background:var(--surface);border:none;cursor:pointer;border-right:1px solid var(--border);transition:background .15s,color .15s}
+.step-btn:last-child{border-right:none}
+.step-btn .num{width:24px;height:24px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--mono);flex-shrink:0}
+.step-btn.active{background:var(--navy);color:var(--gold)}
+.step-btn.active .num{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+.step-btn.done{color:var(--blue);background:var(--surface2)}
+.step-btn.done .num{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* PANELS */
+.panel{display:none}
+.panel.show{display:block;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px}
+.card-head{background:var(--navy2);color:#fff;padding:11px 20px;display:flex;align-items:center;gap:10px;font-family:var(--head);font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+.card-head .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.card-body{padding:22px}
+
+/* FORM */
+.fg{display:grid;gap:16px}
+.fg-3{grid-template-columns:1fr 1fr 1fr}
+.fg-2{grid-template-columns:1fr 1fr}
+@media(max-width:620px){.fg-3,.fg-2{grid-template-columns:1fr}}
+.field label{display:block;margin-bottom:6px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mid)}
+.field select{width:100%;height:42px;padding:0 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:5px;font-family:var(--body);font-size:14px;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238898aa'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
+.field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(16,85,204,.12)}
+.field select:disabled{opacity:.45;cursor:not-allowed}
+
+/* SERVICES GRID */
+.service-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:680px){.service-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.service-grid{grid-template-columns:1fr}}
+.svc-item{border:2px solid var(--border);border-radius:7px;padding:13px 14px;cursor:pointer;user-select:none;transition:border-color .15s,background .15s;display:flex;align-items:flex-start;gap:10px}
+.svc-item:hover{border-color:var(--blue);background:#f0f5ff}
+.svc-item.on{border-color:var(--blue);background:#e8f0fe}
+.svc-item.on .svc-check{background:var(--blue);border-color:var(--blue)}
+.svc-check{width:18px;height:18px;border-radius:3px;border:2px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;transition:all .15s}
+.svc-name{font-family:var(--head);font-size:14px;font-weight:600;letter-spacing:.5px;margin-bottom:2px}
+.svc-desc{font-size:12px;color:var(--mid);line-height:1.4}
+
+/* BUTTONS */
+.btn-row{display:flex;align-items:center;gap:10px;margin-top:22px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border:none;border-radius:5px;font-family:var(--head);font-size:14px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--navy);color:var(--gold)}
+.btn-primary:hover{background:#1c3455}
+.btn-gold{background:var(--gold);color:var(--navy);font-size:15px;padding:12px 28px}
+.btn-gold:hover{background:var(--gold-d)}
+.btn-ghost{background:var(--surface);color:var(--mid);border:1.5px solid var(--border)}
+.btn-ghost:hover{border-color:var(--dim);color:var(--text)}
+.btn-copy{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.15);font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:5px 14px;border-radius:4px;cursor:pointer}
+.btn-copy:hover{background:rgba(255,255,255,.15);color:#fff}
+
+/* OUTPUT HEADER */
+.out-header{background:var(--navy);border-radius:8px;padding:26px 28px;margin-bottom:20px;border-left:5px solid var(--gold);position:relative;overflow:hidden}
+.out-header::after{content:'VicPol';position:absolute;right:-10px;top:-14px;font-family:var(--head);font-size:88px;font-weight:700;color:rgba(255,255,255,.03);line-height:1;pointer-events:none}
+.out-stn{font-family:var(--head);font-size:26px;font-weight:700;color:#fff;letter-spacing:1px;margin-bottom:4px}
+.out-sub{font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.45);letter-spacing:1px;margin-bottom:18px}
+.out-meta{display:flex;gap:24px;flex-wrap:wrap}
+.out-meta-label{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.35);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px}
+.out-meta-val{font-family:var(--head);font-size:15px;font-weight:600;color:var(--gold)}
+
+/* NARRATIVE */
+.narrative{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:6px;padding:16px 20px;margin-bottom:20px;font-size:14px;line-height:1.7;color:var(--text)}
+.narrative strong{color:var(--navy)}
+
+/* LEGEND */
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+.legend-label{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+.tag{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 8px;border-radius:3px}
+.tag-ms{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}
+.tag-as{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.tag-ns{background:#ede9fe;color:#5b21b6;border:1px solid #ddd6fe}
+.tag-all{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.tag-fixed{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1}
+
+/* SERVICE BLOCKS */
+.svc-block{background:var(--surface);border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:14px}
+.svc-block-head{background:var(--surface2);padding:10px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.svc-block-icon{font-size:16px}
+.svc-block-name{font-family:var(--head);font-size:14px;font-weight:600;letter-spacing:.5px;flex:1}
+.svc-block-count{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:1px 10px}
+.svc-block-body{padding:14px 18px}
+
+/* UNIT ROWS */
+.unit-table{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.unit-row{display:grid;grid-template-columns:120px 1fr auto;gap:10px;align-items:center;padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:5px;transition:opacity .15s}
+.unit-row.hidden-unit{display:none}
+.u-cs{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--blue);letter-spacing:1px}
+.u-desc{font-size:13px;color:var(--mid)}
+.u-tags{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.svc-note{background:#f0f5ff;border:1px solid #c7d8f8;border-radius:5px;padding:9px 13px;font-size:12px;color:#2d4a8a;line-height:1.6}
+
+/* SLIDER CONTROL */
+.slider-row{display:flex;align-items:center;gap:14px;padding:10px 0 14px;border-top:1px solid var(--border);margin-top:4px}
+.slider-label{font-family:var(--mono);font-size:11px;color:var(--mid);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;min-width:80px}
+.slider-wrap{flex:1;display:flex;align-items:center;gap:10px}
+input[type=range]{flex:1;height:4px;accent-color:var(--blue);cursor:pointer}
+.slider-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--navy);min-width:32px;text-align:center;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px}
+
+/* LINKS GRID */
+.links-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:500px){.links-grid{grid-template-columns:1fr 1fr}}
+.link-item{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:8px 12px}
+.link-key{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.link-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--navy)}
+
+/* EXPORT */
+.export-box{background:var(--navy);border-radius:8px;overflow:hidden;margin-top:20px}
+.export-head{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08)}
+.export-head h3{font-family:var(--head);font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.export-pre{padding:18px;font-family:var(--mono);font-size:12px;color:#94a8c0;line-height:1.85;white-space:pre;overflow-x:auto;max-height:380px;overflow-y:auto}
+.ex-head{color:var(--gold)}.ex-cs{color:#7ec8a4}.ex-cmt{color:rgba(255,255,255,.25)}.ex-sec{color:#7ab0ff}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="badge">VicPol</div>
-  <h1>CAD <span>Lineup</span> Generator</h1>
-  <div class="header-right">
-    <div class="clock" id="clock">--:--:--</div>
-  </div>
+<header class="site-header">
+  <div class="hdr-badge">⭐ Victoria Police</div>
+  <div class="hdr-title"><strong>CAD</strong> Lineup Generator</div>
+  <div class="hdr-right" id="clock">--:--:--</div>
 </header>
 
-<div class="main">
-  <!-- LEFT PANEL: Config -->
-  <div>
-    <div class="panel" style="margin-bottom:16px">
-      <div class="panel-header">
-        <div class="panel-dot"></div>
-        <h2>Station Config</h2>
-      </div>
-      <div class="panel-body">
-        <div class="form-row">
-          <label>Region</label>
-          <select id="regionSelect" onchange="onRegionChange()">
-            <option value="">— Select Region —</option>
-            <option value="N">North Metro (N)</option>
-            <option value="S">South Metro (S)</option>
-            <option value="E">East Metro (E)</option>
-            <option value="W">Western (W)</option>
-            <option value="custom">Custom / Rural</option>
-          </select>
-        </div>
-        <div class="form-row" id="stationRow">
-          <label>Station</label>
-          <select id="stationSelect" onchange="onStationChange()">
-            <option value="">— Select Station —</option>
-          </select>
-        </div>
-        <div class="form-row" id="customCodeRow" style="display:none">
-          <label>Station Code (e.g. ESP, SHP)</label>
-          <input type="text" id="customCode" maxlength="5" placeholder="e.g. SHP" oninput="this.value=this.value.toUpperCase()" />
-        </div>
-        <div class="form-row" id="customNameRow" style="display:none">
-          <label>Station Name</label>
-          <input type="text" id="customName" placeholder="e.g. Shepparton" />
-        </div>
-      </div>
-    </div>
+<div class="wrap">
+  <div class="steps">
+    <button class="step-btn active" id="tab1"><div class="num">1</div>Station</button>
+    <button class="step-btn" id="tab2"><div class="num">2</div>Services</button>
+    <button class="step-btn" id="tab3"><div class="num">3</div>Lineup</button>
+  </div>
 
-    <div class="panel" style="margin-bottom:16px">
-      <div class="panel-header">
-        <div class="panel-dot" style="background:var(--gold);box-shadow:0 0 6px var(--gold)"></div>
-        <h2>Shift</h2>
-      </div>
-      <div class="panel-body">
-        <div class="shift-tabs">
-          <div class="shift-tab active" onclick="setShift('MS',this)" data-tip="0700–1500">Morning</div>
-          <div class="shift-tab" onclick="setShift('AS',this)" data-tip="1500–2300">Afternoon</div>
-          <div class="shift-tab" onclick="setShift('NS',this)" data-tip="2300–0700">Night</div>
-        </div>
-        <div id="stationInfo" style="font-size:12px;color:var(--text-dim);font-style:italic;">Select a station to see shift info.</div>
-      </div>
-    </div>
-
-    <div class="panel" style="margin-bottom:16px">
-      <div class="panel-header">
-        <div class="panel-dot" style="background:var(--accent2);box-shadow:0 0 6px var(--accent2)"></div>
-        <h2>Unit Types</h2>
-      </div>
-      <div class="panel-body">
-        <div class="unit-types-grid" id="unitTypesGrid"></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-dot" style="background:var(--green);box-shadow:0 0 6px var(--green)"></div>
-        <h2>Add Unit</h2>
-      </div>
-      <div class="panel-body">
-        <div class="form-row">
-          <label>Unit Type</label>
-          <select id="unitTypeSelect" onchange="onUnitTypeChange()">
-            <option value="">— Select Type —</option>
-          </select>
-        </div>
-        <div class="form-row" id="subTypeRow" style="display:none">
-          <label>Sub-Type</label>
-          <select id="subTypeSelect"></select>
-        </div>
-        <div class="form-row-inline">
-          <div>
-            <label>Callsign Override</label>
-            <input type="text" id="callsignOverride" placeholder="Auto-generated" maxlength="10" oninput="this.value=this.value.toUpperCase()" />
+  <!-- STEP 1 -->
+  <div class="panel show" id="p1">
+    <div class="card">
+      <div class="card-head"><div class="dot"></div>Select Station</div>
+      <div class="card-body">
+        <div class="fg fg-3">
+          <div class="field">
+            <label>Region</label>
+            <select id="selRegion" onchange="onRegion()">
+              <option value="">— Select —</option>
+              <option value="N">North West Metro</option>
+              <option value="S">Southern Metro</option>
+              <option value="E">Eastern</option>
+              <option value="W">Western</option>
+            </select>
           </div>
-          <div>
-            <label>Status</label>
-            <select id="statusSelect">
-              <option value="C1">C1 – On Patrol</option>
-              <option value="C2">C2 – At Station</option>
-              <option value="C3">C3 – Meal Break</option>
-              <option value="C6">C6 – Off Service</option>
+          <div class="field">
+            <label>Division</label>
+            <select id="selDiv" onchange="onDiv()" disabled>
+              <option value="">— Select Region first —</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Station</label>
+            <select id="selStation" onchange="onStation()" disabled>
+              <option value="">— Select Division first —</option>
             </select>
           </div>
         </div>
-        <div class="form-row">
-          <label>Note (optional)</label>
-          <input type="text" id="unitNote" placeholder="e.g. 2UP crew, single officer…" />
+      </div>
+    </div>
+
+    <div class="card" id="roleCard" style="display:none">
+      <div class="card-head"><div class="dot"></div>Station Classification</div>
+      <div class="card-body">
+        <div class="fg fg-2">
+          <div class="field">
+            <label>Classification</label>
+            <select id="knownRole">
+              <option value="small">Small / Outer Station</option>
+              <option value="suburban" selected>General Suburban</option>
+              <option value="hq">Divisional HQ</option>
+              <option value="regional_hq">Regional HQ</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Supervisor Number</label>
+            <select id="superNum">
+              <option value="251">251 (Default day)</option>
+              <option value="252">252 (Night-primary)</option>
+            </select>
+          </div>
         </div>
-        <button class="btn btn-primary" onclick="addUnit()">+ Add Unit to Lineup</button>
       </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep2()">Next — Select Services →</button>
     </div>
   </div>
 
-  <!-- RIGHT PANEL: Lineup -->
-  <div>
-    <div class="lineup-controls">
-      <h2 id="lineupTitle">Lineup</h2>
-      <button class="btn btn-ghost" onclick="clearLineup()">Clear All</button>
-      <button class="btn btn-export" onclick="openExport()">⬇ Export</button>
-    </div>
-
-    <div id="lineupOutput">
-      <div class="empty-state">
-        <div class="icon">📡</div>
-        <h3>No Units Assigned</h3>
-        <p>Select a station and add units to build your lineup.</p>
+  <!-- STEP 2 -->
+  <div class="panel" id="p2">
+    <div class="card">
+      <div class="card-head"><div class="dot"></div>Select Services / Units</div>
+      <div class="card-body">
+        <div class="service-grid" id="svcGrid"></div>
       </div>
     </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go(1)">← Back</button>
+      <button class="btn btn-gold" onclick="generate()">Generate Lineup →</button>
+    </div>
   </div>
-</div>
 
-<!-- Export Modal -->
-<div class="modal-overlay" id="exportModal">
-  <div class="modal">
-    <div class="modal-head">
-      <h3>Export Lineup</h3>
-      <button class="btn btn-ghost" onclick="closeExport()">✕ Close</button>
-    </div>
-    <div class="modal-body">
-      <div class="export-text" id="exportText"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeExport()">Close</button>
-      <button class="btn btn-export" onclick="copyExport()">Copy to Clipboard</button>
+  <!-- STEP 3 -->
+  <div class="panel" id="p3">
+    <div id="output"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go(2)">← Change Services</button>
+      <button class="btn btn-ghost" onclick="go(1)">↺ Start Over</button>
     </div>
   </div>
 </div>
 
 <script>
-// ============================================================
-// DATA
-// ============================================================
-
-const STATIONS = {
-  N: [
-    { code:'NMN', name:'Melbourne North' },
-    { code:'NMW', name:'Melbourne West' },
-    { code:'NME', name:'Melbourne East' },
-    { code:'NSO', name:'Southbank' },
-    { code:'NCC', name:'Custody Centre' },
-    { code:'NCW', name:'Collingwood' },
-    { code:'NFZ', name:'Fitzroy' },
-    { code:'NRM', name:'Richmond' },
-    { code:'NAL', name:'Altona' },
-    { code:'NLV', name:'Laverton' },
-    { code:'NWN', name:'Williamstown' },
-    { code:'NFC', name:'Footscray' },
-    { code:'NWB', name:'Werribee' },
-    { code:'NWM', name:'Wyndham North' },
-    { code:'NKD', name:'Keilor Downs' },
-    { code:'NSS', name:'Sunshine' },
-    { code:'NCL', name:'Caroline Springs' },
-    { code:'NMT', name:'Melton' },
-    { code:'NBS', name:'Broadmeadows' },
-    { code:'NCI', name:'Craigieburn' },
-    { code:'NSB', name:'Sunbury' },
-    { code:'NBW', name:'Brunswick' },
-    { code:'NFK', name:'Fawkner' },
-    { code:'NAH', name:'Avondale Heights' },
-    { code:'NES', name:'Essendon' },
-    { code:'NMO', name:'Moonee Ponds' },
-    { code:'NFM', name:'Flemington' },
-    { code:'NNC', name:'Northcote' },
-    { code:'NPS', name:'Preston' },
-    { code:'NRR', name:'Reservoir' },
-    { code:'NDA', name:'Mernda' },
-    { code:'NEP', name:'Epping' },
-    { code:'NMP', name:'Mill Park' },
-    { code:'NWS', name:'Whittlesea' },
-    { code:'NGB', name:'Greensborough' },
-    { code:'NHL', name:'Heidelberg' },
-    { code:'NDD', name:'Diamond Creek' },
-    { code:'NEM', name:'Eltham' },
-    { code:'NHB', name:'Hurstbridge' },
-  ],
-  S: [
-    { code:'SSK', name:'St Kilda' },
-    { code:'SSM', name:'South Melbourne' },
-    { code:'SMV', name:'Malvern' },
-    { code:'SPH', name:'Prahran' },
-    { code:'SBY', name:'Bayside' },
-    { code:'SCF', name:'Caulfield' },
-    { code:'SCH', name:'Cheltenham' },
-    { code:'SMB', name:'Moorabbin' },
-    { code:'SMD', name:'Mordialloc' },
-    { code:'SCS', name:'Chelsea' },
-    { code:'SDG', name:'Dandenong' },
-    { code:'SSV', name:'Springvale' },
-    { code:'SBP', name:'Bunyip' },
-    { code:'SED', name:'Emerald' },
-    { code:'SKR', name:'Koo Wee Rup' },
-    { code:'SLL', name:'Lang Lang' },
-    { code:'SPK', name:'Pakenham' },
-    { code:'SCN', name:'Cranbourne' },
-    { code:'SEN', name:'Endeavour Hills' },
-    { code:'SNW', name:'Narre Warren' },
-    { code:'SCD', name:'Carrum Downs' },
-    { code:'SFK', name:'Frankston' },
-    { code:'SDA', name:'Dromana' },
-    { code:'SRO', name:'Rosebud' },
-    { code:'SRY', name:'Rye' },
-    { code:'SSO', name:'Sorrento' },
-    { code:'SHS', name:'Hastings' },
-    { code:'SMT', name:'Mornington' },
-  ],
-  E: [
-    { code:'EAT', name:'Ashburton' },
-    { code:'EBB', name:'Booroondara' },
-    { code:'ECL', name:'Camberwell' },
-    { code:'EDC', name:'Doncaster' },
-    { code:'EWY', name:'Warrandyte' },
-    { code:'EBD', name:'Burwood' },
-    { code:'EBH', name:'Box Hill' },
-    { code:'EFH', name:'Forest Hill' },
-    { code:'ENG', name:'Nunawading' },
-    { code:'ECY', name:'Clayton' },
-    { code:'EGW', name:'Glen Waverley' },
-    { code:'EMW', name:'Mount Waverley' },
-    { code:'EOL', name:'Oakleigh' },
-    { code:'EKX', name:'Knox' },
-    { code:'ERV', name:'Rowville' },
-    { code:'EBO', name:'Boronia' },
-    { code:'ECD', name:'Croydon' },
-    { code:'ERW', name:'Ringwood' },
-    { code:'ELY', name:'Lilydale' },
-    { code:'EHV', name:'Healesville' },
-    { code:'EMB', name:'Mooroolbark' },
-    { code:'EME', name:'Mount Evelyn' },
-    { code:'EMK', name:'Monbulk' },
-    { code:'EBV', name:'Belgrave' },
-    { code:'EOD', name:'Olinda' },
-    { code:'EWR', name:'Warburton' },
-    { code:'EYJ', name:'Yarra Junction' },
-    { code:'EYG', name:'Yarra Glen' },
-  ],
-  W: [
-    { code:'WCO', name:'Corio' },
-    { code:'WLA', name:'Lara' },
-    { code:'WGL', name:'Geelong' },
-    { code:'WDS', name:'Drysdale' },
-    { code:'WBR', name:'Bellarine' },
-    { code:'WPA', name:'Portarlington' },
-    { code:'WQC', name:'Queenscliff' },
-    { code:'WWP', name:'Waurn Ponds' },
-    { code:'WAG', name:'Anglesea' },
-    { code:'WLO', name:'Lorne' },
-    { code:'WTQ', name:'Torquay' },
-    { code:'WWI', name:'Winchelsea' },
-  ]
-};
-
-// Station backing info lookup
-const STATION_INFO = {
-  NMN: { div:'N101', backed:'NMW', psa:'NML', ciu:'NMN', cri:'NMW', hwp:'NML' },
-  NMW: { div:'N101', backed:'NMN', psa:'NML', ciu:'NMN', cri:'NMW', hwp:'NML' },
-  NME: { div:'N101', backed:'NSO,NCC', psa:'NML', ciu:'NMW', cri:'NMW', hwp:'NML' },
-  NSO: { div:'N101', backed:'NME,NCC', psa:'NML', ciu:'NMW', cri:'NMW', hwp:'NML' },
-  NCC: { div:'N101', backed:'NME,NSO', psa:'NML', ciu:'NMW', cri:'NMW', hwp:'NML' },
-  NCW: { div:'N110', backed:'NFZ,NRM', psa:'NYR', ciu:'NYR', cri:'NMW', hwp:'NYR' },
-  NFZ: { div:'N110', backed:'NCW,NRM', psa:'NYR', ciu:'NYR', cri:'NMW', hwp:'NYR' },
-  NRM: { div:'N110', backed:'NCW,NFZ', psa:'NYR', ciu:'NYR', cri:'NMW', hwp:'NYR' },
-  WCO: { div:'W201', backed:'WLA,WGL', psa:'WGL', ciu:'WGL', cri:'WGL', hwp:'WGL' },
-  WLA: { div:'W201', backed:'WCO,WGL', psa:'WGL', ciu:'WGL', cri:'WGL', hwp:'WGL' },
-  WGL: { div:'W201', backed:'WCO,WLA', psa:'WGL', ciu:'WGL', cri:'WGL', hwp:'WGL' },
-  SSK: { div:'S301', backed:'SSM', psa:'SPP', ciu:'SPP', cri:'SPP', hwp:'SPH' },
-  SSM: { div:'S301', backed:'SSK', psa:'SPP', ciu:'SPP', cri:'SPP', hwp:'SPH' },
-  SMV: { div:'S311', backed:'SPH', psa:'SST', ciu:'SST', cri:'SST', hwp:'SPH' },
-  SPH: { div:'S311', backed:'SMV', psa:'SST', ciu:'SST', cri:'SST', hwp:'SPH' },
-  EBB: { div:'E401', backed:'EAT,ECL', psa:'EBB', ciu:'EBB', cri:'EBB', hwp:'ENG' },
-};
-
-// ============================================================
-// UNIT TYPE DEFINITIONS
-// ============================================================
-
-const UNIT_TYPES = [
-  {
-    id: 'sedan', label: 'Sedan', desc: 'General patrol car',
-    rangeStart: 200, rangeEnd: 299,
-    shiftNums: { MS: [207], AS: [203], NS: [211] },
-    note: 'Station patrol unit'
+// ═══════════════════════════════════════════════════════════
+// STATION DATA
+// Format per entry: 'CODE|Name|DivCode|BackedBy|PSA|CIU|CRI|HWP'
+// BackedBy is comma-separated codes. Leave field blank if unknown.
+// ═══════════════════════════════════════════════════════════
+const REGION_DATA = {
+  N: {
+    label: 'North West Metro',
+    divisions: {
+      'Melbourne (N101)': [
+        'NMN|Melbourne North|N101|NMW|NML|NMN|NMW|NML',
+        'NMW|Melbourne West|N101|NMN|NML|NMN|NMW|NML',
+        'NME|Melbourne East|N101|NSO,NCC|NML|NMW|NMW|NML',
+        'NSO|Southbank|N101|NME,NCC|NML|NMW|NMW|NML',
+        'NCC|Custody Centre|N101|NME,NSO|NML|NMW|NMW|NML',
+      ],
+      'Yarra (N110)': [
+        'NCW|Collingwood|N110|NFZ,NRM|NYR|NYR|NMW|NYR',
+        'NFZ|Fitzroy|N110|NCW,NRM|NYR|NYR|NMW|NYR',
+        'NRM|Richmond|N110|NCW,NFZ|NYR|NYR|NMW|NYR',
+      ],
+      'Hobsons Bay (N102)': [
+        'NAL|Altona|N102|NLV,NWN|NHO|NHO|NAL|NWM',
+        'NLV|Laverton|N102|NAL,NWN|NHO|NHO|NAL|NWM',
+        'NWN|Williamstown|N102|NLV,NAL|NHO|NHO|NAL|NWM',
+        'NFC|Footscray|N102||NMB|NMB|NAL|NWM',
+      ],
+      'Wyndham (N112/N122)': [
+        'NWB|Werribee|N112|NWM|NWY|NWY|NWY|NWM',
+        'NWM|Wyndham North|N122|NWB|NWY|NWY|NWY|NWM',
+      ],
+      'Brimbank (N103/N113)': [
+        'NKD|Keilor Downs|N103|NSS|NBR|NBR|NSS|NBR',
+        'NSS|Sunshine|N103|NKD|NBR|NBR|NSS|NBR',
+        'NCL|Caroline Springs|N113|NMT|NMT|NMT|NMT|NMT',
+        'NMT|Melton|N113|NCL|NMT|NMT|NMT|NMT',
+      ],
+      'Hume (N114)': [
+        'NBS|Broadmeadows|N114|NCI,NSB|NHU|NHU|NHU|NFK',
+        'NCI|Craigieburn|N114|NBS,NSB|NHU|NHU|NHU|NFK',
+        'NSB|Sunbury|N114|NBS,NCI|NHU|NHU|NHU|NFK',
+      ],
+      'Moreland / Moonee Valley (N104)': [
+        'NBW|Brunswick|N104|NFK|NMR|NMR|NMR|NFK',
+        'NFK|Fawkner|N104|NBW|NMR|NMR|NMR|NFK',
+        'NAH|Avondale Heights|N104|NES,NMO,NFM|NMV|NMV|NMV|NFK',
+        'NES|Essendon|N104|NAH,NMO,NFM|NMV|NMV|NMV|NFK',
+        'NMO|Moonee Ponds|N104|NAH,NES,NFM|NMV|NMV|NMV|NFK',
+        'NFM|Flemington|N104|NAH,NES,NMO|NMV|NMV|NMV|NFK',
+      ],
+      'Darebin / Whittlesea (N105)': [
+        'NNC|Northcote|N105|NPS,NRR|NDB|NDB|NDB|NGB',
+        'NPS|Preston|N105|NNC,NRR|NDB|NDB|NDB|NGB',
+        'NRR|Reservoir|N105|NNC,NPS|NDB|NDB|NDB|NGB',
+        'NDA|Mernda|N105|NEP,NMP,NWS|NWS|NWS|NWS|NGB',
+        'NEP|Epping|N105|NDA,NMP,NWS|NWS|NWS|NWS|NGB',
+        'NMP|Mill Park|N105|NDA,NEP,NWS|NWS|NWS|NWS|NGB',
+        'NWS|Whittlesea|N105|NDA,NEP,NMP|NWS|NWS|NWS|NGB',
+      ],
+      'Nillumbik / Banyule (N115)': [
+        'NGB|Greensborough|N115|NHL|NBY|NHL|NHL|NGB',
+        'NHL|Heidelberg|N115|NGB|NBY|NHL|NHL|NGB',
+        'NDD|Diamond Creek|N115|NEM,NHB|NNB|NHL|NHL|NGB',
+        'NEM|Eltham|N115|NDD,NHB|NNB|NHL|NHL|NGB',
+        'NHB|Hurstbridge|N115|NDD,NEM|NNB|NHL|NHL|NGB',
+      ],
+    }
   },
-  {
-    id: 'van', label: 'Div Van', desc: 'Divisional Van',
-    rangeStart: 300, rangeEnd: 399,
-    shiftNums: { MS: [307], AS: [303], NS: [311] },
-    note: 'Divisional van – cage'
+  S: {
+    label: 'Southern Metro',
+    divisions: {
+      'Prahran (S301/S311)': [
+        'SSK|St Kilda|S301|SSM|SPP|SPP|SPP|SPH',
+        'SSM|South Melbourne|S301|SSK|SPP|SPP|SPP|SPH',
+        'SMV|Malvern|S311|SPH|SST|SST|SST|SPH',
+        'SPH|Prahran|S311|SMV|SST|SST|SST|SPH',
+      ],
+      'Moorabbin (S302/S312)': [
+        'SBY|Bayside|S302|SCF|SGE|SMB|SMB|SMB',
+        'SCF|Caulfield|S302|SBY|SGE|SMB|SMB|SMB',
+        'SCH|Cheltenham|S312|SMB,SCS,SMD|SKS|SMB|SMB|SMB',
+        'SMB|Moorabbin|S312|SCH,SCS,SMD|SKS|SMB|SMB|SMB',
+        'SMD|Mordialloc|S312|SMB,SCS,SCH|SKS|SMB|SMB|SMB',
+        'SCS|Chelsea|S312|SMB,SCH,SMD|SKS|SMB|SMB|SMB',
+      ],
+      'Dandenong (S303)': [
+        'SDG|Dandenong|S303|SSV|SGD|SGD|SGD|SGD',
+        'SSV|Springvale|S303|SDG|SGD|SGD|SGD|SGD',
+      ],
+      'Frankston (S304)': [
+        'SCD|Carrum Downs|S304|SFK|SFK|SFK|SSL|SSL',
+        'SFK|Frankston|S304|SCD|SFK|SFK|SSL|SSL',
+      ],
+      'Casey / Cardinia (S313)': [
+        'SBP|Bunyip|S313|SPK,SLL,SED,SKR|SCR|SCR|SCR|SCR',
+        'SED|Emerald|S313|SPK,SLL,SBP,SKR|SCR|SCR|SCR|SCR',
+        'SKR|Koo Wee Rup|S313|SPK,SLL,SBP,SED|SCR|SCR|SCR|SCR',
+        'SLL|Lang Lang|S313|SPK,SKR,SBP,SED|SCR|SCR|SCR|SCR',
+        'SPK|Pakenham|S313|SLL,SKR,SBP,SED|SCR|SCR|SCR|SCR',
+        'SCN|Cranbourne|S313|SEN,SNW|SCA|SCA|SNW|SCA',
+        'SEN|Endeavour Hills|S313|SCN,SNW|SCA|SCA|SNW|SCA',
+        'SNW|Narre Warren|S313|SCN,SEN|SCA|SCA|SNW|SCA',
+      ],
+      'Mornington Peninsula (S314)': [
+        'SDA|Dromana|S314|SMT,SRO,SRY,SSO,SHS|SMP|SMP|SSL|SSL',
+        'SRO|Rosebud|S314|SMT,SDA,SRY,SSO,SHS|SMP|SMP|SSL|SSL',
+        'SRY|Rye|S314|SMT,SDA,SRO,SSO,SHS|SMP|SMP|SSL|SSL',
+        'SSO|Sorrento|S314|SMT,SDA,SRY,SRO,SHS|SMP|SMP|SSL|SSL',
+        'SHS|Hastings|S314|SMT,SDA,SRY,SRO,SSO|SMP|SMP|SSL|SSL',
+        'SMT|Mornington|S314|SHS,SDA,SRY,SRO,SSO|SMP|SMP|SSL|SSL',
+      ],
+    }
   },
-  {
-    id: 'rru', label: 'RRU', desc: 'Regional Response Unit',
-    rangeStart: 440, rangeEnd: 449,
-    shiftNums: { MS: [441], AS: [442], NS: [443] },
-    note: 'Supports operational units'
+  E: {
+    label: 'Eastern',
+    divisions: {
+      'Boroondara / Manningham (E401)': [
+        'EAT|Ashburton|E401|EBB,ECL|EBB|EBB|EBB|ENG',
+        'EBB|Booroondara|E401|EAT,ECL|EBB|EBB|EBB|ENG',
+        'ECL|Camberwell|E401|EBB,EAT|EBB|EBB|EBB|ENG',
+        'EDC|Doncaster|E401|EWY|EMG|EMG|EBH|ENG',
+        'EWY|Warrandyte|E401|EDC|EMG|EMG|EBH|ENG',
+      ],
+      'Whitehorse / Monash (E411)': [
+        'EBD|Burwood|E411|EFH,EBH,ENG|EWH|EWH|EBH|ENG',
+        'EBH|Box Hill|E411|EFH,EBD,ENG|EWH|EWH|EBH|ENG',
+        'EFH|Forest Hill|E411|EBD,EBH,ENG|EWH|EWH|EBH|ENG',
+        'ENG|Nunawading|E411|EBD,EBH,EFH|EWH|EWH|EBH|ENG',
+        'ECY|Clayton|E411|EGW,EMW,EOL|EMX|EMX|EMX|ENG',
+        'EGW|Glen Waverley|E411|ECY,EMW,EOL|EMX|EMX|EMX|ENG',
+        'EMW|Mount Waverley|E411|ECY,EGW,EOL|EMX|EMX|EMX|ENG',
+        'EOL|Oakleigh|E411|ECY,EGW,EMW|EMX|EMX|EMX|ENG',
+      ],
+      'Knox (E402)': [
+        'EKX|Knox|E402|ERV,EBO|EKX|EKX|EKX|EKX',
+        'ERV|Rowville|E402|EKX,EBO|EKX|EKX|EKX|EKX',
+        'EBO|Boronia|E402|ERV,EKX|EKX|EKX|EKX|EKX',
+        'ECD|Croydon|E402|ERW|EMA|EMA|ELY|EMA',
+        'ERW|Ringwood|E402|ECD|EMA|EMA|ELY|EMA',
+      ],
+      'Yarra Ranges (E402)': [
+        'ELY|Lilydale|E402|EHV,EMB,EME,EMK,EBV,EOD,EWR,EYJ,EYG|EYR|EYR|ELY|EYR',
+        'EHV|Healesville|E402|ELY,EMB,EME,EMK,EBV,EOD,EWR,EYJ,EYG|EYR|EYR|ELY|EYR',
+        'EMB|Mooroolbark|E402|ELY,EHV,EME,EMK,EBV,EOD,EWR,EYJ,EYG|EYR|EYR|ELY|EYR',
+        'EME|Mount Evelyn|E402|ELY,EHV,EMB,EMK,EBV,EOD,EWR,EYJ,EYG|EYR|EYR|ELY|EYR',
+        'EMK|Monbulk|E402|ELY,EHV,EMB,EME,EBV,EOD,EWR,EYJ,EYG|EYR|EYR|ELY|EYR',
+        'EBV|Belgrave|E402|ELY,EHV,EMB,EME,EMK,EOD,EWR,EYJ,EYG|EYR|EYR|ELY|EYR',
+        'EOD|Olinda|E402|ELY,EHV,EMB,EME,EMK,EBV,EWR,EYJ,EYG|EYR|EYR|ELY|EYR',
+        'EWR|Warburton|E402|ELY,EHV,EMB,EME,EMK,EBV,EOD,EYJ,EYG|EYR|EYR|ELY|EYR',
+        'EYJ|Yarra Junction|E402|ELY,EHV,EMB,EME,EMK,EBV,EOD,EWR,EYG|EYR|EYR|ELY|EYR',
+        'EYG|Yarra Glen|E402|ELY,EHV,EMB,EME,EMK,EBV,EOD,EWR,EYJ|EYR|EYR|ELY|EYR',
+      ],
+      'Goulburn Valley': [
+        'ESP|Shepparton|GV||ESP|ESP|ESP|ESP',
+        'EYW|Yarrawonga|GV||ESP|ESP|ESP|ESP',
+        'EMO|Mooroopna|GV||ESP|ESP|ESP|ESP',
+        'ENH|Nagambie|GV||ESP|ESP|ESP|ESP',
+        'ECO|Cobram|GV||ESP|ESP|ESP|ESP',
+      ],
+      'Wangaratta': [
+        'EWA|Wangaratta|WA||EWA|EWA|EWA|EWA',
+        'EBN|Benalla|WA||EWA|EWA|EWA|EWA',
+        'EBR|Bright|WA||EWA|EWA|EWA|EWA',
+      ],
+      'Morwell': [
+        'EMR|Morwell|MW||EMR|EMR|EMR|EMR',
+        'ETR|Traralgon|MW||EMR|EMR|EMR|EMR',
+        'ELE|Leongatha|MW||EMR|EMR|EMR|EMR',
+        'EWS|Wonthaggi|MW||EMR|EMR|EMR|EMR',
+      ],
+      'Bairnsdale': [
+        'EBA|Bairnsdale|BD||EBA|EBA|EBA|EBA',
+        'EOW|Orbost|BD||EBA|EBA|EBA|EBA',
+        'EML|Mallacoota|BD||EBA|EBA|EBA|EBA',
+      ],
+    }
   },
-  {
-    id: 'socit', label: 'SOCIT', desc: 'Sex / Physical Assault',
-    rangeStart: 470, rangeEnd: 499,
-    shiftNums: { MS: [477], AS: [473], NS: [471] },
-    note: 'South NS: 471',
-    subTypes: [
-      { id:'sgt', label:'SOCIT SGT (450–459)', start:450, end:459 },
-      { id:'ssgt', label:'SOCIT S/SGT (460–469)', start:460, end:469 },
-      { id:'unit', label:'SOCIT Unit (470–499)', start:470, end:499 },
-    ]
-  },
-  {
-    id: 'fviu', label: 'FVIU', desc: 'Family Violence Investigation',
-    rangeStart: 480, rangeEnd: 499,
-    shiftNums: { MS: [487], AS: [483], NS: [] },
-    note: 'NS not staffed',
-    subTypes: [
-      { id:'sgt', label:'FVIU SGT (480)', start:480, end:480 },
-      { id:'ssgt', label:'FVIU S/SGT (490)', start:490, end:490 },
-      { id:'unit', label:'FVIU Unit (481–489)', start:481, end:489 },
-      { id:'court', label:'Court Liaison (499)', start:499, end:499 },
-    ]
-  },
-  {
-    id: 'ciu', label: 'CIU', desc: 'Criminal Investigation',
-    rangeStart: 500, rangeEnd: 599,
-    shiftNums: { MS: [507], AS: [503,520], NS: [541,542,543,544,545,546] },
-    note: 'MS:507 AS:503/520 NS:541–546',
-    subTypes: [
-      { id:'ms', label:'Morning Shift (507)', start:507, end:507 },
-      { id:'as', label:'Afternoon Shift (503/520)', start:503, end:520 },
-      { id:'ns', label:'Night Shift (541–546)', start:541, end:546 },
-      { id:'sup', label:'NS Supervisor (550)', start:550, end:550 },
-    ]
-  },
-  {
-    id: 'hwp', label: 'HWP', desc: 'Highway Patrol',
-    rangeStart: 600, rangeEnd: 699,
-    shiftNums: { MS: [610], AS: [620], NS: [] },
-    note: 'First at accidents with trapped persons',
-    subTypes: [
-      { id:'solo', label:'HWP Solo Mcycle (600–609)', start:600, end:609 },
-      { id:'marked', label:'HWP Marked Car (610–629)', start:610, end:629 },
-      { id:'qcar', label:'HWP Q Car (630–639)', start:630, end:639 },
-      { id:'complaints', label:'HWP Complaints (640–649)', start:640, end:649 },
-      { id:'sgt', label:'HWP SGT (650–659)', start:650, end:659 },
-      { id:'ssgt', label:'HWP S/SGT (660–669)', start:660, end:669 },
-      { id:'special', label:'HWP Special Duties (670–699)', start:670, end:699 },
-    ]
-  },
-  {
-    id: 'foot', label: 'Foot', desc: 'Foot Patrol',
-    rangeStart: 740, rangeEnd: 744,
-    shiftNums: { MS: [741], AS: [742], NS: [] },
-    note: 'Foot patrol units'
-  },
-  {
-    id: 'bike', label: 'Bicycle', desc: 'Bicycle Patrol',
-    rangeStart: 780, rangeEnd: 782,
-    shiftNums: { MS: [781], AS: [782], NS: [] },
-    note: 'Bicycle patrol units'
-  },
-  {
-    id: 'special', label: 'Special', desc: 'Special Duties/Events',
-    rangeStart: 700, rangeEnd: 739,
-    shiftNums: { MS: [701], AS: [702], NS: [] },
-    note: 'Special duties / events'
-  },
-  {
-    id: 'pacer', label: 'PACER', desc: 'Mental Health Unit',
-    rangeStart: 290, rangeEnd: 292,
-    shiftNums: { MS: [290], AS: [291], NS: [292] },
-    note: 'MHaP / PACER response'
-  },
-  {
-    id: 'super', label: 'Supervisor', desc: 'District Patrol SGT',
-    rangeStart: 251, rangeEnd: 252,
-    shiftNums: { MS: [251], AS: [251], NS: [252] },
-    note: '251 or 252'
-  },
-  {
-    id: 'stnsgt', label: 'Stn SGT', desc: 'Station Sergeant (260)',
-    rangeStart: 260, rangeEnd: 260,
-    shiftNums: { MS: [260], AS: [260], NS: [] },
-    note: 'Usually remains at station'
-  },
-  {
-    id: 'divsup', label: 'Div Sup', desc: 'Divisional Supervisor S/SGT',
-    rangeStart: 265, rangeEnd: 265,
-    shiftNums: { MS: [265], AS: [], NS: [] },
-    note: 'Usually 0600/0700 start'
-  },
-  {
-    id: 'dutyoff', label: 'Duty Off', desc: 'Duty Officer (Inspector)',
-    rangeStart: 150, rangeEnd: 150,
-    shiftNums: { MS: [150], AS: [150], NS: [150] },
-    note: 'Region-wide response'
-  },
-  {
-    id: 'cri', label: 'Crime Desk', desc: 'Crime Desk Unit',
-    rangeStart: 571, rangeEnd: 579,
-    shiftNums: { MS: [577], AS: [573], NS: [] },
-    note: 'Forensic / scene',
-    subTypes: [
-      { id:'sgt', label:'Crime Desk SGT (571–572)', start:571, end:572 },
-      { id:'unit', label:'Crime Desk Unit (573–579)', start:573, end:579 },
-    ]
-  },
-  {
-    id: 'dog', label: 'Dog Squad', desc: 'Canine Unit',
-    prefix: 'CAN',
-    rangeStart: 200, rangeEnd: 799,
-    shiftNums: { MS: [211], AS: [213], NS: [215] },
-    note: 'Canine unit'
-  },
-];
-
-// ============================================================
-// STATE
-// ============================================================
-
-let state = {
-  region: '',
-  stationCode: '',
-  stationName: '',
-  shift: 'MS',
-  lineup: [],
-  enabledTypes: new Set(UNIT_TYPES.map(t => t.id)),
-  counterMap: {}
-};
-
-// ============================================================
-// CLOCK
-// ============================================================
-
-function updateClock() {
-  const now = new Date();
-  document.getElementById('clock').textContent =
-    now.toLocaleTimeString('en-AU', { hour12:false });
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-// ============================================================
-// INIT
-// ============================================================
-
-function initUnitTypesGrid() {
-  const grid = document.getElementById('unitTypesGrid');
-  grid.innerHTML = '';
-  UNIT_TYPES.forEach(t => {
-    const item = document.createElement('div');
-    item.className = 'unit-type-item active';
-    item.dataset.id = t.id;
-    item.innerHTML = `
-      <input type="checkbox" checked>
-      <div class="unit-type-check">✓</div>
-      <div class="unit-type-label">${t.label}<br><span style="font-weight:400;font-size:10px;color:var(--text-dim)">${t.desc}</span></div>
-    `;
-    item.onclick = () => toggleUnitType(t.id, item);
-    grid.appendChild(item);
-  });
-}
-
-function toggleUnitType(id, el) {
-  if (state.enabledTypes.has(id)) {
-    state.enabledTypes.delete(id);
-    el.classList.remove('active');
-    el.querySelector('.unit-type-check').textContent = '';
-  } else {
-    state.enabledTypes.add(id);
-    el.classList.add('active');
-    el.querySelector('.unit-type-check').textContent = '✓';
-  }
-  populateUnitTypeSelect();
-}
-
-function populateUnitTypeSelect() {
-  const sel = document.getElementById('unitTypeSelect');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">— Select Type —</option>';
-  UNIT_TYPES.filter(t => state.enabledTypes.has(t.id)).forEach(t => {
-    const opt = document.createElement('option');
-    opt.value = t.id;
-    opt.textContent = `${t.label} — ${t.desc}`;
-    sel.appendChild(opt);
-  });
-  sel.value = cur;
-  onUnitTypeChange();
-}
-
-// ============================================================
-// REGION/STATION
-// ============================================================
-
-function onRegionChange() {
-  const region = document.getElementById('regionSelect').value;
-  state.region = region;
-
-  const stationSel = document.getElementById('stationSelect');
-  const customRow = document.getElementById('customCodeRow');
-  const customNameRow = document.getElementById('customNameRow');
-
-  stationSel.innerHTML = '<option value="">— Select Station —</option>';
-  state.stationCode = '';
-  state.stationName = '';
-
-  if (region === 'custom') {
-    document.getElementById('stationRow').style.display = 'none';
-    customRow.style.display = 'block';
-    customNameRow.style.display = 'block';
-  } else {
-    document.getElementById('stationRow').style.display = 'block';
-    customRow.style.display = 'none';
-    customNameRow.style.display = 'none';
-
-    if (STATIONS[region]) {
-      STATIONS[region].forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.code;
-        opt.textContent = `${s.name} (${s.code})`;
-        stationSel.appendChild(opt);
-      });
+  W: {
+    label: 'Western',
+    divisions: {
+      'Geelong (W201/W211)': [
+        'WCO|Corio|W201|WLA,WGL|WGL|WGL|WGL|WGL',
+        'WLA|Lara|W201|WCO,WGL|WGL|WGL|WGL|WGL',
+        'WGL|Geelong|W201|WCO,WLA|WGL|WGL|WGL|WGL',
+        'WDS|Drysdale|W201|WBR,WPA,WQC,WWP|WGL|WGL|WGL|WGL',
+        'WBR|Bellarine|W201|WDS,WPA,WQC,WWP|WGL|WGL|WGL|WGL',
+        'WPA|Portarlington|W201|WDS,WBR,WQC,WWP|WGL|WGL|WGL|WGL',
+        'WQC|Queenscliff|W201|WDS,WBR,WPA,WWP|WGL|WGL|WGL|WGL',
+        'WWP|Waurn Ponds|W201|WDS,WBR,WPA,WQC|WGL|WGL|WGL|WGL',
+        'WAG|Anglesea|W211|WLO,WTQ,WWI|WSF|WTQ|WGL|WTQ',
+        'WLO|Lorne|W211|WAG,WTQ,WWI|WSF|WTQ|WGL|WTQ',
+        'WTQ|Torquay|W211|WAG,WLO,WWI|WSF|WTQ|WGL|WTQ',
+        'WWI|Winchelsea|W211|WAG,WLO,WTQ|WSF|WTQ|WGL|WTQ',
+      ],
+      'Warrnambool': [
+        'WWR|Warrnambool|WR||WWR|WWR|WWR|WWR',
+        'WHA|Hamilton|WR||WWR|WWR|WWR|WWR',
+        'WCL|Colac|WR||WWR|WWR|WWR|WWR',
+        'WPF|Port Fairy|WR||WWR|WWR|WWR|WWR',
+      ],
+      'Bendigo': [
+        'WBI|Bendigo|WBI||WBI|WBI|WBI|WBI',
+        'WKY|Kyneton|WBI||WBI|WBI|WBI|WBI',
+        'WCS|Castlemaine|WBI||WBI|WBI|WBI|WBI',
+      ],
+      'Mildura': [
+        'WMI|Mildura|WMI||WMI|WMI|WMI|WMI',
+        'WSH|Swan Hill|WMI||WMI|WMI|WMI|WMI',
+        'WHR|Horsham|WMI||WMI|WMI|WMI|WMI',
+        'WKP|Kerang|WMI||WMI|WMI|WMI|WMI',
+      ],
     }
   }
-  updateLineupTitle();
+};
+
+function parseStation(s){
+  const p=s.split('|');
+  return{code:p[0],name:p[1],div:p[2],backed:(p[3]||'').split(',').filter(x=>x),psa:p[4]||'',ciu:p[5]||'',cri:p[6]||'',hwp:p[7]||''};
 }
 
-function onStationChange() {
-  const code = document.getElementById('stationSelect').value;
-  if (!code) { state.stationCode = ''; state.stationName = ''; return; }
+// ═══════════════════════════════════════════════════════════
+// SERVICES LIST
+// ═══════════════════════════════════════════════════════════
+const SERVICES=[
+  {id:'cars',  icon:'🚗', name:'Station Cars',               desc:'General duties sedans. 200–299.'},
+  {id:'vans',  icon:'🚐', name:'Divisional Vans',            desc:'Cage vans for prisoner transport. 300–399.'},
+  {id:'hwp',   icon:'🏍️', name:'Highway Patrol',             desc:'Traffic enforcement & accident response. 600–699.'},
+  {id:'port',  icon:'🛡️', name:'PORT / Dist. Support',       desc:'Public Order Response & support units. 700–799.'},
+  {id:'ciu',   icon:'🔍', name:'CIU',                        desc:'Criminal Investigation Unit. 500–599.'},
+  {id:'fviu',  icon:'🏠', name:'FVIU',                       desc:'Family Violence Investigation Unit. 480–499.'},
+  {id:'socit', icon:'👶', name:'SOCIT',                      desc:'Sexual Offences & Child Investigations. 450–499.'},
+  {id:'cri',   icon:'🔬', name:'Crime Desk (CRI)',            desc:'Scene examination & forensics. 570–579.'},
+  {id:'rru',   icon:'⚡', name:'RRU',                        desc:'Regional Response Unit. 440–449.'},
+  {id:'dog',   icon:'🐕', name:'Dog Squad (CAN)',             desc:'Canine unit. Uses CAN prefix.'},
+  {id:'pacer', icon:'🧠', name:'PACER / MHaP',               desc:'Mental health co-response. 290–292.'},
+  {id:'sar',   icon:'🔦', name:'Search & Rescue (RES)',       desc:'Search & rescue. RES prefix, 400–459.'},
+  {id:'transit',icon:'🚆',name:'Transit Police (TST)',        desc:'Public transport policing. TST prefix.'},
+  {id:'sog',   icon:'🦅', name:'SOG / CIRT',                 desc:'Special Operations / CIRT. SCY/CIR prefix.'},
+  {id:'polair',icon:'🚁', name:'POLAIR',                     desc:'Air wing — helicopters & fixed wing.'},
+  {id:'hviu',  icon:'🚛', name:'Heavy Vehicle Unit (ROA)',    desc:'Heavy vehicle enforcement. ROA prefix.'},
+  {id:'mounted',icon:'🐴',name:'Mounted Branch (MOU)',        desc:'Mounted unit. MOU prefix, 800–899.'},
+];
 
-  const allStations = Object.values(STATIONS).flat();
-  const found = allStations.find(s => s.code === code);
-  state.stationCode = code;
-  state.stationName = found ? found.name : code;
-  state.counterMap = {};
+// ═══════════════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════════════
+const S={stationCode:'',stationName:'',regionLabel:'',divisionLabel:'',backed:[],psa:'',ciu:'',cri:'',hwp:'',role:'suburban',selected:new Set()};
 
-  updateStationInfo();
-  updateLineupTitle();
+// Per-service slider overrides: id -> count
+const OVERRIDES={};
+
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-AU',{hour12:false})},1000);
+
+// ═══════════════════════════════════════════════════════════
+// STEP NAV
+// ═══════════════════════════════════════════════════════════
+function go(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('p'+i).classList.toggle('show',i===n);
+    const t=document.getElementById('tab'+i);
+    t.classList.remove('active','done');
+    if(i===n)t.classList.add('active');
+    else if(i<n)t.classList.add('done');
+  });
 }
 
-function getStationCode() {
-  if (state.region === 'custom') {
-    return document.getElementById('customCode').value.trim().toUpperCase() || 'XXX';
-  }
-  return state.stationCode || 'XXX';
+// ═══════════════════════════════════════════════════════════
+// STEP 1
+// ═══════════════════════════════════════════════════════════
+function onRegion(){
+  const r=document.getElementById('selRegion').value;
+  const dSel=document.getElementById('selDiv');
+  dSel.innerHTML='<option value="">— Select Division —</option>';
+  dSel.disabled=!r;
+  document.getElementById('selStation').innerHTML='<option value="">— Select Division first —</option>';
+  document.getElementById('selStation').disabled=true;
+  document.getElementById('roleCard').style.display='none';
+  if(r&&REGION_DATA[r])Object.keys(REGION_DATA[r].divisions).forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;dSel.appendChild(o)});
+}
+function onDiv(){
+  const r=document.getElementById('selRegion').value;
+  const d=document.getElementById('selDiv').value;
+  const sSel=document.getElementById('selStation');
+  sSel.innerHTML='<option value="">— Select Station —</option>';
+  sSel.disabled=!d;
+  document.getElementById('roleCard').style.display='none';
+  if(r&&d&&REGION_DATA[r]&&REGION_DATA[r].divisions[d])
+    REGION_DATA[r].divisions[d].forEach(entry=>{const st=parseStation(entry);const o=document.createElement('option');o.value=entry;o.textContent=`${st.name} (${st.code})`;sSel.appendChild(o)});
+}
+function onStation(){
+  document.getElementById('roleCard').style.display=document.getElementById('selStation').value?'block':'none';
+}
+function goStep2(){
+  const sel=document.getElementById('selStation').value;
+  if(!sel){alert('Please select a station.');return;}
+  const st=parseStation(sel);
+  S.stationCode=st.code;S.stationName=st.name;S.backed=st.backed;S.psa=st.psa;S.ciu=st.ciu;S.cri=st.cri;S.hwp=st.hwp;
+  const r=document.getElementById('selRegion').value;
+  S.regionLabel=r?REGION_DATA[r].label:'';
+  S.divisionLabel=document.getElementById('selDiv').value||'';
+  S.role=document.getElementById('knownRole').value;
+  buildServiceGrid();
+  go(2);
 }
 
-function getStationName() {
-  if (state.region === 'custom') {
-    return document.getElementById('customName').value.trim() || 'Unknown Station';
-  }
-  return state.stationName || 'Unknown Station';
+// ═══════════════════════════════════════════════════════════
+// STEP 2
+// ═══════════════════════════════════════════════════════════
+function buildServiceGrid(){
+  const g=document.getElementById('svcGrid');g.innerHTML='';
+  SERVICES.forEach(sv=>{
+    const el=document.createElement('div');
+    el.className='svc-item'+(S.selected.has(sv.id)?' on':'');
+    el.dataset.id=sv.id;
+    el.innerHTML=`<div class="svc-check">${S.selected.has(sv.id)?'✓':''}</div><div class="svc-text"><div class="svc-name">${sv.icon} ${sv.name}</div><div class="svc-desc">${sv.desc}</div></div>`;
+    el.onclick=()=>{
+      if(S.selected.has(sv.id)){S.selected.delete(sv.id);el.classList.remove('on');el.querySelector('.svc-check').textContent='';}
+      else{S.selected.add(sv.id);el.classList.add('on');el.querySelector('.svc-check').textContent='✓';}
+    };
+    g.appendChild(el);
+  });
 }
 
-function updateStationInfo() {
-  const info = STATION_INFO[state.stationCode];
-  const el = document.getElementById('stationInfo');
-  if (!info) {
-    el.textContent = 'Station details not available.';
-    return;
-  }
-  el.innerHTML = `
-    <div style="color:var(--text-bright);margin-bottom:8px;font-style:normal;font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:1px">STATION LINKS</div>
-    <div class="info-row"><span class="info-key">Division</span><span class="info-val">${info.div}</span></div>
-    <div class="info-row"><span class="info-key">Backed By</span><span class="info-val">${info.backed || '—'}</span></div>
-    <div class="info-row"><span class="info-key">PSA</span><span class="info-val">${info.psa}</span></div>
-    <div class="info-row"><span class="info-key">CIU</span><span class="info-val">${info.ciu}</span></div>
-    <div class="info-row"><span class="info-key">CRI</span><span class="info-val">${info.cri}</span></div>
-    <div class="info-row"><span class="info-key">HWP</span><span class="info-val">${info.hwp}</span></div>
-  `;
+// ═══════════════════════════════════════════════════════════
+// UNIT POOL BUILDERS
+// Pools are ordered MS → AS → NS → MS → AS → NS (interleaved)
+// so that slicing at ANY count always gives a balanced spread
+// across all three shifts, not just morning-heavy results.
+// ═══════════════════════════════════════════════════════════
+function buildCarPool(c){
+  // Interleaved: MS, AS, NS, MS, AS, NS, MS, AS, NS, MS, AS, NS, MS, AS, NS
+  return[
+    {cs:c+'207',desc:'Station Car — Morning shift (0700)',  shifts:['MS']},
+    {cs:c+'203',desc:'Station Car — Afternoon shift (1500)',shifts:['AS']},
+    {cs:c+'211',desc:'Station Car — Night shift (2300)',    shifts:['NS']},
+    {cs:c+'204',desc:'Station Car — Morning shift (0700)',  shifts:['MS']},
+    {cs:c+'206',desc:'Station Car — Afternoon shift (1500)',shifts:['AS']},
+    {cs:c+'214',desc:'Station Car — Night shift (2300)',    shifts:['NS']},
+    {cs:c+'201',desc:'Station Car — Morning shift (0700)',  shifts:['MS']},
+    {cs:c+'209',desc:'Station Car — Afternoon shift (1500)',shifts:['AS']},
+    {cs:c+'217',desc:'Station Car — Night shift (2300)',    shifts:['NS']},
+    {cs:c+'208',desc:'Station Car — Morning shift (0700)',  shifts:['MS']},
+    {cs:c+'202',desc:'Station Car — Afternoon shift (1500)',shifts:['AS']},
+    {cs:c+'212',desc:'Station Car — Night shift (2300)',    shifts:['NS']},
+    {cs:c+'205',desc:'Station Car — Morning shift (0700)',  shifts:['MS']},
+    {cs:c+'210',desc:'Station Car — Afternoon shift (1500)',shifts:['AS']},
+    {cs:c+'215',desc:'Station Car — Night shift (2300)',    shifts:['NS']},
+  ];
+}
+function buildVanPool(c){
+  // Interleaved: MS, AS, NS, MS, AS, NS
+  return[
+    {cs:c+'307',desc:'Divisional Van — Morning shift (0700)',  shifts:['MS']},
+    {cs:c+'303',desc:'Divisional Van — Afternoon shift (1500)',shifts:['AS']},
+    {cs:c+'311',desc:'Divisional Van — Night shift (2300)',    shifts:['NS']},
+    {cs:c+'308',desc:'Divisional Van — Morning shift (0700)',  shifts:['MS']},
+    {cs:c+'304',desc:'Divisional Van — Afternoon shift (1500)',shifts:['AS']},
+    {cs:c+'312',desc:'Divisional Van — Night shift (2300)',    shifts:['NS']},
+  ];
+}
+function buildHWPPool(c){
+  // Core patrol cars interleaved first, then specialised roles, then supervisor/base
+  return[
+    {cs:c+'612',desc:'HWP Marked Car',              shifts:['MS','AS']},
+    {cs:c+'617',desc:'HWP Marked Car',              shifts:['AS','NS']},
+    {cs:c+'618',desc:'HWP Marked Car',              shifts:['NS']},
+    {cs:c+'613',desc:'HWP Marked Car',              shifts:['MS']},
+    {cs:c+'600',desc:'HWP Solo Motorcycle',         shifts:['MS','AS']},
+    {cs:c+'601',desc:'HWP Solo Motorcycle',         shifts:['AS']},
+    {cs:c+'630',desc:'HWP Q Car (unmarked)',         shifts:['MS','AS']},
+    {cs:c+'650',desc:'HWP Sergeant',                shifts:['MS','AS']},
+    {cs:c+'651',desc:'HWP Sergeant',                shifts:['NS']},
+    {cs:c+'661',desc:'HWP Senior Sergeant',         shifts:['MS']},
+    {cs:c+'906',desc:'HWP Base Station (fixed)',     shifts:['FIXED']},
+  ];
+}
+function buildCIUPool(c){
+  // Interleaved: MS, AS, NS, MS, AS, NS … then supervisor and base last
+  return[
+    {cs:c+'507',desc:'CIU — Morning shift',              shifts:['MS']},
+    {cs:c+'503',desc:'CIU — Afternoon shift',            shifts:['AS']},
+    {cs:c+'541',desc:'CIU — Night shift',                shifts:['NS']},
+    {cs:c+'508',desc:'CIU — Morning shift (additional)', shifts:['MS']},
+    {cs:c+'520',desc:'CIU — Afternoon shift (additional)',shifts:['AS']},
+    {cs:c+'542',desc:'CIU — Night shift (additional)',   shifts:['NS']},
+    {cs:c+'504',desc:'CIU — Afternoon shift',            shifts:['AS']},
+    {cs:c+'543',desc:'CIU — Night shift',                shifts:['NS']},
+    {cs:c+'550',desc:'CIU Night Supervisor',             shifts:['NS']},
+    {cs:c+'905',desc:'CIU Base Station (fixed)',         shifts:['FIXED']},
+  ];
+}
+function buildPORTPool(c){
+  // Varied shift coverage interleaved so reducing count keeps a spread
+  return[
+    {cs:c+'700',desc:'Special Duties',                          shifts:['MS','AS']},
+    {cs:c+'730',desc:'Special Events / Emergency Response',     shifts:['AS','NS']},
+    {cs:c+'740',desc:'Foot Patrol',                             shifts:['MS','AS']},
+    {cs:c+'710',desc:'Special Duties Allocation',               shifts:['MS']},
+    {cs:c+'731',desc:'Special Events / Emergency Response',     shifts:['NS']},
+    {cs:c+'741',desc:'Foot Patrol',                             shifts:['AS']},
+    {cs:c+'745',desc:'Licensing Unit',                          shifts:['MS','AS']},
+    {cs:c+'780',desc:'Bicycle Patrol',                          shifts:['MS','AS']},
+    {cs:c+'750',desc:'Special Duties',                          shifts:['MS','AS']},
+    {cs:c+'783',desc:'Court Security Guard',                    shifts:['MS','AS']},
+    {cs:c+'785',desc:'Hospital Guard',                          shifts:['MS','AS','NS']},
+    {cs:c+'920',desc:'DOSO — District Operational Support Office',shifts:['MS']},
+  ];
+}
+function buildRRUPool(c){
+  return[
+    {cs:c+'440',desc:'RRU — Morning shift',shifts:['MS']},
+    {cs:c+'441',desc:'RRU — Afternoon shift',shifts:['AS']},
+    {cs:c+'442',desc:'RRU — Night shift',shifts:['NS']},
+    {cs:c+'443',desc:'RRU — Additional unit',shifts:['MS','AS']},
+    {cs:c+'904',desc:'RRU Base Station (fixed)',shifts:['FIXED']},
+  ];
 }
 
-function updateLineupTitle() {
-  const code = getStationCode();
-  const name = getStationName();
-  const shiftLabels = { MS:'Morning', AS:'Afternoon', NS:'Night' };
-  document.getElementById('lineupTitle').textContent =
-    code !== 'XXX' ? `${name} — ${shiftLabels[state.shift]} Shift` : 'Lineup';
+// ═══════════════════════════════════════════════════════════
+// DEFAULT COUNTS by role
+// ═══════════════════════════════════════════════════════════
+const DEFAULTS={
+  small:   {cars:3, vans:2, hwp:3,  ciu:3,  port:3,  rru:2},
+  suburban:{cars:6, vans:3, hwp:5,  ciu:5,  port:5,  rru:3},
+  hq:      {cars:9, vans:4, hwp:8,  ciu:7,  port:8,  rru:4},
+  regional_hq:{cars:12,vans:6,hwp:11,ciu:10,port:12, rru:5},
+};
+const MAX_UNITS={cars:15,vans:6,hwp:11,ciu:10,port:12,rru:5};
+
+function defaultCount(svcId){
+  const d=DEFAULTS[S.role]||DEFAULTS.suburban;
+  return d[svcId]||3;
 }
 
-// ============================================================
-// SHIFT
-// ============================================================
-
-function setShift(shift, el) {
-  state.shift = shift;
-  document.querySelectorAll('.shift-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  state.counterMap = {};
-  updateLineupTitle();
+// ═══════════════════════════════════════════════════════════
+// GENERATE
+// ═══════════════════════════════════════════════════════════
+function generate(){
+  if(S.selected.size===0){alert('Please select at least one service.');return;}
+  // Reset overrides to defaults
+  S.selected.forEach(id=>{ OVERRIDES[id]=defaultCount(id); });
+  buildOutput();
+  go(3);
 }
 
-// ============================================================
-// UNIT TYPE SELECT
-// ============================================================
+function buildOutput(){
+  const c=S.stationCode;
+  const role=S.role;
+  const roleLabel={small:'Small/Outer Station',suburban:'General Suburban',hq:'Divisional HQ',regional_hq:'Regional HQ'}[role];
 
-function onUnitTypeChange() {
-  const typeId = document.getElementById('unitTypeSelect').value;
-  const type = UNIT_TYPES.find(t => t.id === typeId);
-  const subRow = document.getElementById('subTypeRow');
-  const subSel = document.getElementById('subTypeSelect');
+  const sections=[];
 
-  if (type && type.subTypes) {
-    subRow.style.display = 'block';
-    subSel.innerHTML = '';
-    type.subTypes.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = s.label;
-      subSel.appendChild(opt);
-    });
-  } else {
-    subRow.style.display = 'none';
-  }
+  // SUPERVISION (always, no slider)
+  const supUnits=[
+    {cs:c+'250',desc:'Station Sergeant',shifts:['MS','AS','NS']},
+    {cs:c+'251',desc:'District Patrol Supervisor (SGT) — Day shifts',shifts:['MS','AS']},
+    {cs:c+'252',desc:'District Patrol Supervisor (SGT) — Night shift',shifts:['NS']},
+  ];
+  if(role==='hq'||role==='regional_hq'){supUnits.push({cs:c+'260',desc:'Senior Sergeant',shifts:['MS','AS']});supUnits.push({cs:c+'265',desc:'Divisional Supervisor (S/SGT)',shifts:['MS']});}
+  if(role==='regional_hq'){supUnits.push({cs:c+'100',desc:'Superintendent',shifts:['MS']});supUnits.push({cs:'REG150',desc:'Duty Officer (Inspector) — Region-wide',shifts:['ALL']});}
+  sections.push({id:'_sup',icon:'⭐',name:'Command & Supervision',units:supUnits,pool:null,
+    note:'Station SGT (250) attends incidents at the request of units already in attendance. District Patrol SGT (251/252) remains on mobile patrol for the duration of the shift.'+(role==='hq'||role==='regional_hq'?' S/SGT (265) holds command and control responsibility.':'')});
 
-  // Auto-suggest callsign
-  if (type) {
-    const cs = autoCallsign(type);
-    document.getElementById('callsignOverride').placeholder = cs || 'Auto-generated';
-  }
-}
+  // SCALABLE SERVICES
+  const svcDefs=[
+    {id:'cars',  icon:'🚗',name:'Station Cars',        pool:buildCarPool(c),
+     note:`Sedans use 200–299. Trailing digit reflects shift start: ${c}20<strong>7</strong>=0700, ${c}20<strong>3</strong>=1500, ${c}21<strong>1</strong>=2300. Additional units increment from those bases.`},
+    {id:'vans',  icon:'🚐',name:'Divisional Vans',     pool:buildVanPool(c),
+     note:`Vans use 300–399. Shift convention mirrors cars: 30<strong>7</strong>=morning, 30<strong>3</strong>=afternoon, 31<strong>1</strong>=night. Typically crewed by 2 officers and carry a prisoner cage.`},
+    {id:'hwp',   icon:'🏍️',name:'Highway Patrol',      pool:buildHWPPool(c),
+     note:`HWP is the first choice for accidents with trapped or injured persons. Cars 610–649, solo motorcycle 600–609, Q Cars (unmarked) 630–639, SGT 650–659, S/SGT 660–669. Fixed base at ${c}906.`},
+    {id:'ciu',   icon:'🔍',name:'CIU',                 pool:buildCIUPool(c),
+     note:`CIU investigates serious crime. Morning: ${c}507. Afternoon: ${c}503/${c}520. Night: ${c}541–546 with supervisor at ${c}550. Fixed base at ${c}905.`},
+    {id:'port',  icon:'🛡️',name:'PORT / District Support',pool:buildPORTPool(c),
+     note:`District Support uses 700–799. Special duties 700–709, events/emergency 730–739, foot patrol 740–744, licensing 745–749, bicycle 780–782, court/hospital guards 783–786.`},
+    {id:'rru',   icon:'⚡',name:'RRU',                 pool:buildRRUPool(c),
+     note:`RRU (440–449) provides operational support, allocated to specific operations or tasks. Fixed base at ${c}904.`},
+  ];
 
-// ============================================================
-// CALLSIGN GENERATION
-// ============================================================
-
-function autoCallsign(type, subId) {
-  const stCode = getStationCode();
-  if (!stCode || stCode === 'XXX') return '';
-
-  // Special prefix units
-  if (type.prefix) return `${type.prefix}${getNextNum(type.id, type.rangeStart, type.rangeEnd)}`;
-
-  const shift = state.shift;
-
-  let rangeStart = type.rangeStart;
-  let rangeEnd = type.rangeEnd;
-
-  // If has subtypes, use subtype range
-  if (type.subTypes && subId) {
-    const sub = type.subTypes.find(s => s.id === subId);
-    if (sub) { rangeStart = sub.start; rangeEnd = sub.end; }
-  }
-
-  // Prefer shift-specific numbers
-  const shiftNums = type.shiftNums ? (type.shiftNums[shift] || []) : [];
-  let num;
-
-  if (shiftNums.length > 0) {
-    // Find first unused shift num
-    num = shiftNums.find(n => !isNumUsed(stCode + n));
-    if (!num) num = getNextNum(type.id + (subId||''), rangeStart, rangeEnd);
-  } else {
-    num = getNextNum(type.id + (subId||''), rangeStart, rangeEnd);
-  }
-
-  return `${stCode}${num}`;
-}
-
-function isNumUsed(callsign) {
-  return state.lineup.some(u => u.callsign === callsign);
-}
-
-function getNextNum(key, start, end) {
-  if (!state.counterMap[key]) state.counterMap[key] = start;
-  let n = state.counterMap[key];
-  // skip used
-  while (isNumUsed(getStationCode() + n) && n <= end) n++;
-  state.counterMap[key] = n + 1;
-  return Math.min(n, end);
-}
-
-// ============================================================
-// ADD UNIT
-// ============================================================
-
-function addUnit() {
-  const typeId = document.getElementById('unitTypeSelect').value;
-  if (!typeId) { alert('Please select a unit type.'); return; }
-
-  const stCode = getStationCode();
-  if (stCode === 'XXX') { alert('Please select or enter a station code first.'); return; }
-
-  const type = UNIT_TYPES.find(t => t.id === typeId);
-  const subId = type.subTypes ? document.getElementById('subTypeSelect').value : null;
-  const subType = subId ? type.subTypes.find(s => s.id === subId) : null;
-
-  let callsign = document.getElementById('callsignOverride').value.trim().toUpperCase();
-  if (!callsign) callsign = autoCallsign(type, subId);
-  if (!callsign) callsign = stCode + type.rangeStart;
-
-  const status = document.getElementById('statusSelect').value;
-  const note = document.getElementById('unitNote').value.trim();
-
-  const unit = {
-    id: Date.now() + Math.random(),
-    callsign,
-    typeId,
-    typeName: type.label,
-    typeDesc: subType ? subType.label : type.desc,
-    status,
-    note,
-    shift: state.shift
-  };
-
-  state.lineup.push(unit);
-  renderLineup();
-
-  // Reset
-  document.getElementById('callsignOverride').value = '';
-  document.getElementById('unitNote').value = '';
-}
-
-// ============================================================
-// RENDER LINEUP
-// ============================================================
-
-function renderLineup() {
-  const el = document.getElementById('lineupOutput');
-  if (state.lineup.length === 0) {
-    el.innerHTML = `<div class="empty-state">
-      <div class="icon">📡</div>
-      <h3>No Units Assigned</h3>
-      <p>Select a station and add units to build your lineup.</p>
-    </div>`;
-    return;
-  }
-
-  const statusLabels = { C1:'C1 – PATROL', C2:'C2 – STATION', C3:'C3 – MEAL', C6:'C6 – OFF SVC' };
-  const statusClasses = { C1:'status-c1', C2:'status-c2', C3:'status-c3', C6:'status-c6' };
-
-  // Group by type
-  const groups = {};
-  state.lineup.forEach(u => {
-    if (!groups[u.typeId]) groups[u.typeId] = [];
-    groups[u.typeId].push(u);
+  svcDefs.forEach(def=>{
+    if(!S.selected.has(def.id))return;
+    const count=OVERRIDES[def.id]||defaultCount(def.id);
+    sections.push({...def,units:def.pool,activeCount:count,scalable:true});
   });
 
-  let html = '<div class="unit-grid">';
+  // FIXED-SIZE SERVICES
+  if(S.selected.has('pacer'))sections.push({id:'pacer',icon:'🧠',name:'PACER / MHaP',pool:null,units:[
+    {cs:c+'290',desc:'PACER / MHaP — Morning shift',shifts:['MS']},
+    {cs:c+'291',desc:'PACER / MHaP — Afternoon shift',shifts:['AS']},
+    {cs:c+'292',desc:'PACER / MHaP — Night shift',shifts:['NS']},
+  ],note:'Secondary unit for mental health related incidents. Provides on-site clinical assessment, de-escalation advice and referral support. Requested by the initial attending unit. Uses 290–292.'});
 
-  const order = UNIT_TYPES.map(t => t.id);
-  order.forEach(tid => {
-    if (!groups[tid]) return;
-    const typeLabel = UNIT_TYPES.find(t => t.id === tid)?.label || tid;
-    html += `<div class="section-head">
-      <span class="section-head-label">${typeLabel}</span>
-      <span class="section-count">${groups[tid].length} unit${groups[tid].length!==1?'s':''}</span>
-    </div>`;
+  if(S.selected.has('fviu'))sections.push({id:'fviu',icon:'🏠',name:'FVIU',pool:null,units:[
+    {cs:c+'480',desc:'FVIU Sergeant',shifts:['MS','AS']},
+    {cs:c+'487',desc:'FVIU Unit — Morning shift',shifts:['MS']},
+    {cs:c+'483',desc:'FVIU Unit — Afternoon shift',shifts:['AS']},
+    {cs:c+'481',desc:'FVIU Unit — Additional',shifts:['MS','AS']},
+    {cs:c+'490',desc:'FVIU Detective Senior Sergeant',shifts:['MS','AS']},
+    {cs:c+'499',desc:'FVIU Court Liaison Officer',shifts:['MS','AS']},
+  ],note:'Secondary response to family violence incidents within the PSA. Day/afternoon shifts only — no dedicated night unit. SGT at 480, S/SGT at 490, units 481–489, Court Liaison at 499.'});
 
-    groups[tid].forEach(u => {
-      const statusClass = statusClasses[u.status] || 'status-c1';
-      const statusLabel = statusLabels[u.status] || u.status;
-      html += `<div class="unit-row" id="unit-${u.id}">
-        <div class="unit-cell">
-          <span class="unit-callsign">${u.callsign}</span>
-        </div>
-        <div class="unit-cell">
-          <div>
-            <div class="unit-desc"><strong>${u.typeName}</strong> — ${u.typeDesc}</div>
-            ${u.note ? `<div style="font-size:11px;color:var(--text-dim);margin-top:2px">${u.note}</div>` : ''}
-          </div>
-        </div>
-        <div class="unit-cell">
-          <select class="status-select-wrap" style="background:var(--bg);border:1px solid var(--border-bright);color:var(--text-bright);font-family:var(--mono);font-size:11px;padding:4px 8px;border-radius:3px;width:100%;" 
-            onchange="changeStatus('${u.id}', this.value)">
-            ${['C1','C2','C3','C6'].map(s => `<option value="${s}" ${u.status===s?'selected':''}>${statusLabels[s]}</option>`).join('')}
-          </select>
-        </div>
-        <div class="unit-cell">
-          <div class="unit-actions">
-            <button class="btn btn-danger" onclick="removeUnit('${u.id}')">✕</button>
-          </div>
-        </div>
+  if(S.selected.has('socit'))sections.push({id:'socit',icon:'👶',name:'SOCIT',pool:null,units:[
+    {cs:'REG477',desc:'SOCIT Unit — Morning shift',shifts:['MS']},
+    {cs:'REG473',desc:'SOCIT Unit — Afternoon shift',shifts:['AS']},
+    {cs:'REG471',desc:'SOCIT Unit — Night shift',shifts:['NS']},
+    {cs:'REG450',desc:'SOCIT Sergeant',shifts:['MS','AS']},
+    {cs:'REG460',desc:'SOCIT Senior Sergeant',shifts:['MS','AS']},
+  ],note:'SOCIT provides initial response to sexual/physical assaults on children or families. Regional (REG) prefix. Units 470–499, SGT 450–459, S/SGT 460–469.'});
+
+  if(S.selected.has('cri'))sections.push({id:'cri',icon:'🔬',name:'Crime Desk (CRI)',pool:null,units:[
+    {cs:'CRI570',desc:'Crime Desk Office',shifts:['MS','AS']},
+    {cs:'CRI571',desc:'Crime Desk Sergeant',shifts:['MS','AS']},
+    {cs:'CRI577',desc:'Crime Desk Unit — Morning shift',shifts:['MS']},
+    {cs:'CRI573',desc:'Crime Desk Unit — Afternoon shift',shifts:['AS']},
+  ],note:'Coordinates CSOs at events, photographs scenes and conducts forensic examination. CRI prefix, SGT 571–572, units 573–579.'});
+
+  if(S.selected.has('dog'))sections.push({id:'dog',icon:'🐕',name:'Dog Squad (CAN)',pool:null,units:[
+    {cs:'CAN207',desc:'Canine Unit — Morning shift',shifts:['MS']},
+    {cs:'CAN203',desc:'Canine Unit — Afternoon shift',shifts:['AS']},
+    {cs:'CAN211',desc:'Canine Unit — Night shift',shifts:['NS']},
+    {cs:'CAN700',desc:'Canine — Narcotics / Training specialty',shifts:['MS','AS']},
+  ],note:'CAN prefix regardless of station. Numbers follow standard shift convention. CAN700 = narcotics/training specialty.'});
+
+  if(S.selected.has('sar'))sections.push({id:'sar',icon:'🔦',name:'Search & Rescue (RES)',pool:null,units:[
+    {cs:'RES400',desc:'SAR Unit — General',shifts:['MS','AS']},
+    {cs:'RES410',desc:'SAR Field Team',shifts:['MS','AS','NS']},
+    {cs:'RES451',desc:'SAR Sergeant',shifts:['MS','AS']},
+  ],note:'RES prefix, range 400–459. Responds to missing persons, bushland searches and maritime incidents. Often activated on callout.'});
+
+  if(S.selected.has('transit'))sections.push({id:'transit',icon:'🚆',name:'Transit Police (TST)',pool:null,units:[
+    {cs:'TST271',desc:'Transit Unit',shifts:['MS','AS']},
+    {cs:'TST275',desc:'Transit Unit',shifts:['AS','NS']},
+    {cs:'TST250',desc:'Transit Sergeant',shifts:['MS','AS']},
+    {cs:'TST260',desc:'Transit Senior Sergeant',shifts:['MS']},
+    {cs:'TST910',desc:'Metrol Control Centre (fixed)',shifts:['FIXED']},
+    {cs:'TST912',desc:'Tram Control Centre (fixed)',shifts:['FIXED']},
+  ],note:'TST prefix. Units 270–389, SGT 250–259, S/SGT 260–269. Fixed bases: TST910 (Metrol), TST912 (Tram).'});
+
+  if(S.selected.has('sog'))sections.push({id:'sog',icon:'🦅',name:'SOG / CIRT',pool:null,units:[
+    {cs:'SCY200',desc:'Special Operations Group Unit',shifts:['MS','AS','NS']},
+    {cs:'SCY210',desc:'SOG — Additional unit',shifts:['MS','AS']},
+    {cs:'CIR200',desc:'CIRT Unit',shifts:['MS','AS','NS']},
+  ],note:'SOG uses SCY prefix. CIRT uses CIR prefix, range 200–899. Region-wide assets deployed as required.'});
+
+  if(S.selected.has('polair'))sections.push({id:'polair',icon:'🚁',name:'POLAIR',pool:null,units:[
+    {cs:'POLAIR30',desc:'Rotary Wing (Helicopter) — Primary',shifts:['MS','AS','NS']},
+    {cs:'POLAIR31',desc:'Rotary Wing (Helicopter) — Secondary',shifts:['AS','NS']},
+    {cs:'POLAIR35',desc:'Fixed Wing (Plane)',shifts:['MS','AS']},
+    {cs:'AIR451', desc:'Air Sergeant',shifts:['MS','AS']},
+    {cs:'AIR46',  desc:'Air Senior Sergeant',shifts:['MS']},
+  ],note:'POLAIR30–32 (rotary), POLAIR35 (fixed wing). Used for patrol, traffic, search/rescue, fire observation and urgent transport. State-wide asset.'});
+
+  if(S.selected.has('hviu'))sections.push({id:'hviu',icon:'🚛',name:'Heavy Vehicle Unit (ROA)',pool:null,units:[
+    {cs:'ROA501',desc:'Heavy Vehicle Unit',shifts:['MS','AS']},
+    {cs:'ROA503',desc:'Heavy Vehicle Unit',shifts:['AS']},
+    {cs:'ROA550',desc:'Heavy Vehicle Supervisor',shifts:['MS']},
+  ],note:'ROA prefix, range 501–505. Compliance and enforcement targeting heavy vehicles.'});
+
+  if(S.selected.has('mounted'))sections.push({id:'mounted',icon:'🐴',name:'Mounted Branch (MOU)',pool:null,units:[
+    {cs:'MOU800',desc:'Mounted Unit — Primary',shifts:['MS','AS']},
+    {cs:'MOU810',desc:'Mounted Unit — Secondary',shifts:['AS']},
+    {cs:'MOU850',desc:'Mounted Sergeant',shifts:['MS','AS']},
+  ],note:'MOU prefix, range 800–899. High-visibility patrol and crowd control. State-wide asset.'});
+
+  renderOutput(c,role,roleLabel,sections);
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+function shiftTag(s){
+  if(s==='FIXED')return'<span class="tag tag-fixed">FIXED</span>';
+  if(s==='ALL') return'<span class="tag tag-all">ALL SHIFTS</span>';
+  if(s==='MS')  return'<span class="tag tag-ms">MS</span>';
+  if(s==='AS')  return'<span class="tag tag-as">AS</span>';
+  if(s==='NS')  return'<span class="tag tag-ns">NS</span>';
+  return'';
+}
+
+function renderOutput(code,role,roleLabel,sections){
+  const totalVisible=sections.reduce((a,sec)=>{
+    if(sec.scalable)return a+(OVERRIDES[sec.id]||defaultCount(sec.id));
+    return a+sec.units.length;
+  },0);
+
+  const roleDesc={small:'a smaller outer station',suburban:'a general suburban station',hq:'a divisional headquarters',regional_hq:'the headquarters for the region'}[role];
+  let narr=`For an ideal configuration at <strong>${S.stationName} Police Station (${code})</strong>, ${roleDesc}`;
+  if(S.divisionLabel)narr+=` for the <strong>${S.divisionLabel}</strong> division`;
+  if(S.regionLabel)narr+=` in the <strong>${S.regionLabel} Region</strong>`;
+  narr+=`, the following vehicle lineup is suggested. Units are listed across all shifts — morning (0700), afternoon (1500) and night (2300) crews may appear together. Use the <strong>unit count sliders</strong> on each service block to adjust numbers up or down.`;
+
+  let linksHtml='';
+  if(S.backed.length||S.psa){
+    const items=[
+      S.backed.length?`<div class="link-item"><div class="link-key">Backed By</div><div class="link-val">${S.backed.join(', ')}</div></div>`:'',
+      S.psa?`<div class="link-item"><div class="link-key">PSA</div><div class="link-val">${S.psa}</div></div>`:'',
+      S.ciu?`<div class="link-item"><div class="link-key">CIU</div><div class="link-val">${S.ciu}</div></div>`:'',
+      S.cri?`<div class="link-item"><div class="link-key">CRI</div><div class="link-val">${S.cri}</div></div>`:'',
+      S.hwp?`<div class="link-item"><div class="link-key">HWP</div><div class="link-val">${S.hwp}</div></div>`:'',
+    ].filter(Boolean).join('');
+    linksHtml=`<div class="card" style="margin-bottom:14px"><div class="card-head"><div class="dot"></div>Station Support Links</div><div class="card-body"><div class="links-grid">${items}</div></div></div>`;
+  }
+
+  let blocksHtml='';
+  sections.forEach(sec=>{
+    const isScalable=!!sec.scalable;
+    const count=isScalable?(OVERRIDES[sec.id]||defaultCount(sec.id)):sec.units.length;
+    const maxCount=isScalable?(MAX_UNITS[sec.id]||sec.units.length):sec.units.length;
+
+    let rows='';
+    sec.units.forEach((u,idx)=>{
+      const hidden=isScalable&&idx>=count;
+      rows+=`<div class="unit-row${hidden?' hidden-unit':''}" id="urow-${sec.id}-${idx}">
+        <span class="u-cs">${u.cs}</span>
+        <span class="u-desc">${u.desc}</span>
+        <div class="u-tags">${u.shifts.map(shiftTag).join('')}</div>
       </div>`;
     });
+
+    const sliderHtml=isScalable?`
+      <div class="slider-row">
+        <span class="slider-label">Units</span>
+        <div class="slider-wrap">
+          <input type="range" min="1" max="${maxCount}" value="${count}"
+            oninput="onSlider('${sec.id}',this.value)"
+            id="sl-${sec.id}">
+          <span class="slider-val" id="slv-${sec.id}">${count}</span>
+        </div>
+      </div>`:'';
+
+    blocksHtml+=`<div class="svc-block">
+      <div class="svc-block-head">
+        <span class="svc-block-icon">${sec.icon}</span>
+        <span class="svc-block-name">${sec.name}</span>
+        <span class="svc-block-count" id="sc-${sec.id}">${count} unit${count!==1?'s':''}</span>
+      </div>
+      <div class="svc-block-body">
+        ${sliderHtml}
+        <div class="unit-table" id="ut-${sec.id}">${rows}</div>
+        <div class="svc-note">${sec.note}</div>
+      </div>
+    </div>`;
   });
 
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-function changeStatus(id, status) {
-  const unit = state.lineup.find(u => String(u.id) === String(id));
-  if (unit) { unit.status = status; }
-}
-
-function removeUnit(id) {
-  state.lineup = state.lineup.filter(u => String(u.id) !== String(id));
-  renderLineup();
-}
-
-function clearLineup() {
-  if (!confirm('Clear all units from the lineup?')) return;
-  state.lineup = [];
-  state.counterMap = {};
-  renderLineup();
-}
-
-// ============================================================
-// EXPORT
-// ============================================================
-
-function openExport() {
-  if (state.lineup.length === 0) { alert('No units in lineup to export.'); return; }
-
-  const stCode = getStationCode();
-  const stName = getStationName();
-  const shiftLabels = { MS:'Morning', AS:'Afternoon', NS:'Night' };
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-AU');
-  const timeStr = now.toLocaleTimeString('en-AU', { hour12:false });
-
-  const statusLabels = { C1:'C1-PATROL', C2:'C2-STATION', C3:'C3-MEAL', C6:'C6-OFF SVC' };
-
-  let out = `=== VICTORIA POLICE CAD LINEUP ===\n`;
-  out += `Station : ${stName} (${stCode})\n`;
-  out += `Shift   : ${shiftLabels[state.shift]} Shift\n`;
-  out += `Date    : ${dateStr} ${timeStr}\n`;
-  out += `Units   : ${state.lineup.length}\n`;
-  out += `${'='.repeat(44)}\n\n`;
-
-  const groups = {};
-  state.lineup.forEach(u => {
-    if (!groups[u.typeId]) groups[u.typeId] = [];
-    groups[u.typeId].push(u);
+  // Export
+  let exp=`VICTORIA POLICE — CAD LINEUP\n${'═'.repeat(46)}\n`;
+  exp+=`Station  : ${S.stationName} Police Station (${code})\n`;
+  if(S.divisionLabel)exp+=`Division : ${S.divisionLabel}\n`;
+  if(S.regionLabel)exp+=`Region   : ${S.regionLabel}\n`;
+  exp+=`Role     : ${roleLabel}\nUnits    : ${totalVisible}\n${'─'.repeat(46)}\n\n`;
+  sections.forEach(sec=>{
+    const count=sec.scalable?(OVERRIDES[sec.id]||defaultCount(sec.id)):sec.units.length;
+    exp+=`${sec.name.toUpperCase()}\n`;
+    sec.units.slice(0,count).forEach(u=>{exp+=`  ${u.cs.padEnd(12)} ${u.desc.padEnd(36)} [${u.shifts.join('/')}]\n`;});
+    exp+='\n';
   });
-
-  const order = UNIT_TYPES.map(t => t.id);
-  order.forEach(tid => {
-    if (!groups[tid]) return;
-    const typeLabel = UNIT_TYPES.find(t => t.id === tid)?.label.toUpperCase() || tid;
-    out += `--- ${typeLabel} ---\n`;
-    groups[tid].forEach(u => {
-      const status = statusLabels[u.status] || u.status;
-      const notePart = u.note ? `  [${u.note}]` : '';
-      out += `  ${u.callsign.padEnd(10)} ${u.typeDesc.padEnd(26)} ${status}${notePart}\n`;
-    });
-    out += '\n';
-  });
-
-  // Backed by info
-  const info = STATION_INFO[state.stationCode];
-  if (info) {
-    out += `--- STATION LINKS ---\n`;
-    out += `  Division  : ${info.div}\n`;
-    out += `  Backed By : ${info.backed}\n`;
-    out += `  PSA       : ${info.psa}\n`;
-    out += `  CIU       : ${info.ciu}\n`;
-    out += `  CRI       : ${info.cri}\n`;
-    out += `  HWP       : ${info.hwp}\n`;
+  if(S.backed.length||S.psa){
+    exp+=`STATION SUPPORT LINKS\n`;
+    if(S.backed.length)exp+=`  Backed By : ${S.backed.join(', ')}\n`;
+    if(S.psa)exp+=`  PSA       : ${S.psa}\n`;
+    if(S.ciu)exp+=`  CIU       : ${S.ciu}\n`;
+    if(S.cri)exp+=`  CRI       : ${S.cri}\n`;
+    if(S.hwp)exp+=`  HWP       : ${S.hwp}\n`;
   }
 
-  document.getElementById('exportText').textContent = out;
-  document.getElementById('exportModal').classList.add('open');
+  const expDisplay=exp
+    .replace(/^(VICTORIA POLICE.*)/gm,'<span class="ex-head">$1</span>')
+    .replace(/^([═─]+)/gm,'<span class="ex-cmt">$1</span>')
+    .replace(/^(Station|Division|Region|Role|Units|Backed|PSA|CIU|CRI|HWP)(\s*:.*)/gm,'<span class="ex-cmt">$1$2</span>')
+    .replace(/^([A-Z][A-Z &\/\(\)]+\n)/gm,'<span class="ex-sec">$1</span>')
+    .replace(/\b([A-Z]{2,7}[0-9]{2,4})\b/g,'<span class="ex-cs">$1</span>');
+
+  document.getElementById('output').innerHTML=`
+    <div class="out-header">
+      <div class="out-stn">${S.stationName} Police Station</div>
+      <div class="out-sub">${code} · ${S.divisionLabel||''} ${S.regionLabel?'· '+S.regionLabel:''} · ${roleLabel}</div>
+      <div class="out-meta">
+        <div class="out-meta-item"><div class="out-meta-label">Station Code</div><div class="out-meta-val">${code}</div></div>
+        <div class="out-meta-item"><div class="out-meta-label">Classification</div><div class="out-meta-val">${roleLabel}</div></div>
+        <div class="out-meta-item"><div class="out-meta-label">Total Units</div><div class="out-meta-val" id="totalCount">${totalVisible}</div></div>
+        <div class="out-meta-item"><div class="out-meta-label">Services</div><div class="out-meta-val">${sections.length}</div></div>
+      </div>
+    </div>
+    <div class="narrative">${narr}</div>
+    <div class="legend">
+      <span class="legend-label">Shift key:</span>
+      <span class="tag tag-ms">MS</span> Morning (0700) &nbsp;
+      <span class="tag tag-as">AS</span> Afternoon (1500) &nbsp;
+      <span class="tag tag-ns">NS</span> Night (2300) &nbsp;
+      <span class="tag tag-fixed">FIXED</span> Base / Always-on
+    </div>
+    ${linksHtml}
+    ${blocksHtml}
+    <div class="export-box">
+      <div class="export-head">
+        <h3>Export / Copy</h3>
+        <button class="btn-copy" onclick="copyExport()">Copy to Clipboard</button>
+      </div>
+      <div class="export-pre" id="expPre">${expDisplay}</div>
+    </div>
+    <div style="display:none" id="expRaw">${exp}</div>`;
+
+  // Store sections ref for live slider updates
+  window._sections=sections;
 }
 
-function closeExport() {
-  document.getElementById('exportModal').classList.remove('open');
+// ═══════════════════════════════════════════════════════════
+// SLIDER HANDLER — live update without full re-render
+// ═══════════════════════════════════════════════════════════
+function onSlider(svcId, rawVal){
+  const n=parseInt(rawVal,10);
+  OVERRIDES[svcId]=n;
+
+  // Update display value
+  document.getElementById('slv-'+svcId).textContent=n;
+  document.getElementById('sc-'+svcId).textContent=n+' unit'+(n!==1?'s':'');
+
+  // Show/hide unit rows
+  const sec=window._sections.find(s=>s.id===svcId);
+  if(!sec)return;
+  sec.units.forEach((_,idx)=>{
+    const row=document.getElementById('urow-'+svcId+'-'+idx);
+    if(row)row.classList.toggle('hidden-unit',idx>=n);
+  });
+
+  // Recount total
+  const total=window._sections.reduce((a,s)=>{
+    return a+(s.scalable?(OVERRIDES[s.id]||defaultCount(s.id)):s.units.length);
+  },0);
+  const tc=document.getElementById('totalCount');
+  if(tc)tc.textContent=total;
+
+  // Rebuild export text
+  rebuildExport();
 }
 
-function copyExport() {
-  const text = document.getElementById('exportText').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = event.target;
-    btn.textContent = '✓ Copied!';
-    setTimeout(() => btn.textContent = 'Copy to Clipboard', 2000);
+function rebuildExport(){
+  const code=S.stationCode;
+  const role=S.role;
+  const roleLabel={small:'Small/Outer Station',suburban:'General Suburban',hq:'Divisional HQ',regional_hq:'Regional HQ'}[role];
+  const sections=window._sections;
+  const totalVisible=sections.reduce((a,s)=>a+(s.scalable?(OVERRIDES[s.id]||defaultCount(s.id)):s.units.length),0);
+
+  let exp=`VICTORIA POLICE — CAD LINEUP\n${'═'.repeat(46)}\n`;
+  exp+=`Station  : ${S.stationName} Police Station (${code})\n`;
+  if(S.divisionLabel)exp+=`Division : ${S.divisionLabel}\n`;
+  if(S.regionLabel)exp+=`Region   : ${S.regionLabel}\n`;
+  exp+=`Role     : ${roleLabel}\nUnits    : ${totalVisible}\n${'─'.repeat(46)}\n\n`;
+  sections.forEach(sec=>{
+    const count=sec.scalable?(OVERRIDES[sec.id]||defaultCount(sec.id)):sec.units.length;
+    exp+=`${sec.name.toUpperCase()}\n`;
+    sec.units.slice(0,count).forEach(u=>{exp+=`  ${u.cs.padEnd(12)} ${u.desc.padEnd(36)} [${u.shifts.join('/')}]\n`;});
+    exp+='\n';
+  });
+  if(S.backed.length||S.psa){
+    exp+=`STATION SUPPORT LINKS\n`;
+    if(S.backed.length)exp+=`  Backed By : ${S.backed.join(', ')}\n`;
+    if(S.psa)exp+=`  PSA       : ${S.psa}\n`;
+    if(S.ciu)exp+=`  CIU       : ${S.ciu}\n`;
+    if(S.cri)exp+=`  CRI       : ${S.cri}\n`;
+    if(S.hwp)exp+=`  HWP       : ${S.hwp}\n`;
+  }
+
+  const raw=document.getElementById('expRaw');
+  if(raw)raw.textContent=exp;
+
+  const expDisplay=exp
+    .replace(/^(VICTORIA POLICE.*)/gm,'<span class="ex-head">$1</span>')
+    .replace(/^([═─]+)/gm,'<span class="ex-cmt">$1</span>')
+    .replace(/^(Station|Division|Region|Role|Units|Backed|PSA|CIU|CRI|HWP)(\s*:.*)/gm,'<span class="ex-cmt">$1$2</span>')
+    .replace(/^([A-Z][A-Z &\/\(\)]+\n)/gm,'<span class="ex-sec">$1</span>')
+    .replace(/\b([A-Z]{2,7}[0-9]{2,4})\b/g,'<span class="ex-cs">$1</span>');
+  const pre=document.getElementById('expPre');
+  if(pre)pre.innerHTML=expDisplay;
+}
+
+function copyExport(){
+  navigator.clipboard.writeText(document.getElementById('expRaw').textContent).then(()=>{
+    const b=document.querySelector('.btn-copy');
+    b.textContent='✓ Copied!';setTimeout(()=>b.textContent='Copy to Clipboard',2000);
   });
 }
-
-// ============================================================
-// INIT
-// ============================================================
-
-initUnitTypesGrid();
-populateUnitTypeSelect();
 </script>
 </body>
 </html>
