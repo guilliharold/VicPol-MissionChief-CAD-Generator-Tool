@@ -243,219 +243,218 @@ input[type=range]{flex:1;height:4px;accent-color:var(--blue);cursor:pointer}
   </div>
 </div>
 
+
 <script>
 // ═══════════════════════════════════════════════════════════
-// STATION DATA
-// Format per entry: 'CODE|Name|DivCode|BackedBy|PSA|CIU|CRI|HWP'
-// BackedBy is comma-separated codes. Leave field blank if unknown.
+// CSV LOADER
+// Fetches stations.csv from the same directory as index.html.
+// Falls back to the inline REGION_DATA template if the fetch
+// fails (e.g. when running locally from the file system).
+//
+// CSV columns (header row required):
+//   code, name, region, region_label, division, div_code,
+//   psa, cri, classification
+// ═══════════════════════════════════════════════════════════
+async function loadCSV() {
+  try {
+    const res = await fetch('stations.csv');
+    if (!res.ok) throw new Error('not found');
+    const text = await res.text();
+    ingestCSV(text);
+    console.log('stations.csv loaded');
+  } catch(e) {
+    console.warn('stations.csv not found — using inline template data.');
+  }
+  populateRegionDropdown();
+}
+
+function parseCSVLine(line) {
+  // Handles quoted fields containing commas
+  const out = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { inQ = !inQ; }
+    else if (ch === ',' && !inQ) { out.push(cur.trim()); cur = ''; }
+    else { cur += ch; }
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function ingestCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim() && !l.startsWith('#'));
+  if (lines.length < 2) return;
+
+  const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+  const idx = h => headers.indexOf(h);
+
+  // Clear all existing inline station entries, keep division keys
+  Object.values(REGION_DATA).forEach(reg => {
+    Object.keys(reg.divisions).forEach(div => {
+      reg.divisions[div] = [];
+    });
+  });
+
+  // Also collect new regions/divisions from CSV
+  for (let i = 1; i < lines.length; i++) {
+    const f = parseCSVLine(lines[i]);
+    if (f.length < 2) continue;
+
+    const code           = (f[idx('code')]           || '').toUpperCase();
+    const name           = f[idx('name')]             || '';
+    const regionKey      = (f[idx('region')]          || '').toUpperCase();
+    const regionLabel    = f[idx('region_label')]     || regionKey;
+    const divisionName   = f[idx('division')]         || 'Unknown Division';
+    const divCode        = f[idx('div_code')]         || '';
+    const psa            = f[idx('psa')]              || '';
+    const cri            = f[idx('cri')]              || '';
+    const classification = f[idx('classification')]   || 'suburban';
+
+    if (!code || !name || !regionKey) continue;
+
+    // Create region if new
+    if (!REGION_DATA[regionKey]) {
+      REGION_DATA[regionKey] = { label: regionLabel, divisions: {} };
+      addRegionOption(regionKey, regionLabel);
+    }
+
+    // Create division if new
+    if (!REGION_DATA[regionKey].divisions[divisionName]) {
+      REGION_DATA[regionKey].divisions[divisionName] = [];
+    }
+
+    // 'CODE|Name|DivCode|PSA|CRI|classification'
+    REGION_DATA[regionKey].divisions[divisionName].push(
+      `${code}|${name}|${divCode}|${psa}|${cri}|${classification}`
+    );
+  }
+
+  // Remove any divisions left empty after CSV load
+  Object.values(REGION_DATA).forEach(reg => {
+    Object.keys(reg.divisions).forEach(div => {
+      if (reg.divisions[div].length === 0) delete reg.divisions[div];
+    });
+  });
+}
+
+function addRegionOption(key, label) {
+  const sel = document.getElementById('selRegion');
+  // Don't duplicate
+  if ([...sel.options].some(o => o.value === key)) return;
+  const o = document.createElement('option');
+  o.value = key; o.textContent = label;
+  sel.appendChild(o);
+}
+
+function populateRegionDropdown() {
+  // The four built-in options are already in the HTML.
+  // This ensures any CSV-added regions also appear.
+  Object.keys(REGION_DATA).forEach(key => {
+    addRegionOption(key, REGION_DATA[key].label);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATION DATA — structural template
+// Real station entries are replaced by CSV at load time.
+// Each inline entry: 'CODE|Name|DivCode|PSA|CRI|classification'
 // ═══════════════════════════════════════════════════════════
 const REGION_DATA = {
   N: {
     label: 'North West Metro',
     divisions: {
-      'Melbourne (N101)': [
-        'NMN|Melbourne North|N101|NMW|NML|NMN|NMW|NML',
-        'NMW|Melbourne West|N101|NMN|NML|NMN|NMW|NML',
-        'NME|Melbourne East|N101|NSO,NCC|NML|NMW|NMW|NML',
-        'NSO|Southbank|N101|NME,NCC|NML|NMW|NMW|NML',
-        'NCC|Custody Centre|N101|NME,NSO|NML|NMW|NMW|NML',
-      ],
-      'Yarra (N110)': [
-        'NCW|Collingwood|N110|NFZ,NRM|NYR|NYR|NMW|NYR',
-        'NFZ|Fitzroy|N110|NCW,NRM|NYR|NYR|NMW|NYR',
-        'NRM|Richmond|N110|NCW,NFZ|NYR|NYR|NMW|NYR',
-      ],
-      'Hobsons Bay (N102)': [
-        'NAL|Altona|N102|NLV,NWN|NHO|NHO|NAL|NWM',
-        'NLV|Laverton|N102|NAL,NWN|NHO|NHO|NAL|NWM',
-        'NWN|Williamstown|N102|NLV,NAL|NHO|NHO|NAL|NWM',
-        'NFC|Footscray|N102||NMB|NMB|NAL|NWM',
-      ],
-      'Wyndham (N112/N122)': [
-        'NWB|Werribee|N112|NWM|NWY|NWY|NWY|NWM',
-        'NWM|Wyndham North|N122|NWB|NWY|NWY|NWY|NWM',
-      ],
-      'Brimbank (N103/N113)': [
-        'NKD|Keilor Downs|N103|NSS|NBR|NBR|NSS|NBR',
-        'NSS|Sunshine|N103|NKD|NBR|NBR|NSS|NBR',
-        'NCL|Caroline Springs|N113|NMT|NMT|NMT|NMT|NMT',
-        'NMT|Melton|N113|NCL|NMT|NMT|NMT|NMT',
-      ],
-      'Hume (N114)': [
-        'NBS|Broadmeadows|N114|NCI,NSB|NHU|NHU|NHU|NFK',
-        'NCI|Craigieburn|N114|NBS,NSB|NHU|NHU|NHU|NFK',
-        'NSB|Sunbury|N114|NBS,NCI|NHU|NHU|NHU|NFK',
-      ],
-      'Moreland / Moonee Valley (N104)': [
-        'NBW|Brunswick|N104|NFK|NMR|NMR|NMR|NFK',
-        'NFK|Fawkner|N104|NBW|NMR|NMR|NMR|NFK',
-        'NAH|Avondale Heights|N104|NES,NMO,NFM|NMV|NMV|NMV|NFK',
-        'NES|Essendon|N104|NAH,NMO,NFM|NMV|NMV|NMV|NFK',
-        'NMO|Moonee Ponds|N104|NAH,NES,NFM|NMV|NMV|NMV|NFK',
-        'NFM|Flemington|N104|NAH,NES,NMO|NMV|NMV|NMV|NFK',
-      ],
-      'Darebin / Whittlesea (N105)': [
-        'NNC|Northcote|N105|NPS,NRR|NDB|NDB|NDB|NGB',
-        'NPS|Preston|N105|NNC,NRR|NDB|NDB|NDB|NGB',
-        'NRR|Reservoir|N105|NNC,NPS|NDB|NDB|NDB|NGB',
-        'NDA|Mernda|N105|NEP,NMP,NWS|NWS|NWS|NWS|NGB',
-        'NEP|Epping|N105|NDA,NMP,NWS|NWS|NWS|NWS|NGB',
-        'NMP|Mill Park|N105|NDA,NEP,NWS|NWS|NWS|NWS|NGB',
-        'NWS|Whittlesea|N105|NDA,NEP,NMP|NWS|NWS|NWS|NGB',
-      ],
-      'Nillumbik / Banyule (N115)': [
-        'NGB|Greensborough|N115|NHL|NBY|NHL|NHL|NGB',
-        'NHL|Heidelberg|N115|NGB|NBY|NHL|NHL|NGB',
-        'NDD|Diamond Creek|N115|NEM,NHB|NNB|NHL|NHL|NGB',
-        'NEM|Eltham|N115|NDD,NHB|NNB|NHL|NHL|NGB',
-        'NHB|Hurstbridge|N115|NDD,NEM|NNB|NHL|NHL|NGB',
-      ],
+      'Melbourne':             ['TBC|TBC — Melbourne (N101)|N101|||suburban'],
+      'Yarra':                 ['TBC|TBC — Yarra (N110)|N110|||suburban'],
+      'Hobsons Bay':           ['TBC|TBC — Hobsons Bay (N102)|N102|||suburban'],
+      'Wyndham':               ['TBC|TBC — Wyndham (N112/N122)|N112|||suburban'],
+      'Brimbank':              ['TBC|TBC — Brimbank (N103/N113)|N103|||suburban'],
+      'Hume':                  ['TBC|TBC — Hume (N114)|N114|||suburban'],
+      'Moreland / Moonee Valley': ['TBC|TBC — Moreland / Moonee Valley (N104)|N104|||suburban'],
+      'Darebin / Whittlesea':  ['TBC|TBC — Darebin / Whittlesea (N105)|N105|||suburban'],
+      'Nillumbik / Banyule':   ['TBC|TBC — Nillumbik / Banyule (N115)|N115|||suburban'],
     }
   },
   S: {
     label: 'Southern Metro',
     divisions: {
-      'Prahran (S301/S311)': [
-        'SSK|St Kilda|S301|SSM|SPP|SPP|SPP|SPH',
-        'SSM|South Melbourne|S301|SSK|SPP|SPP|SPP|SPH',
-        'SMV|Malvern|S311|SPH|SST|SST|SST|SPH',
-        'SPH|Prahran|S311|SMV|SST|SST|SST|SPH',
-      ],
-      'Moorabbin (S302/S312)': [
-        'SBY|Bayside|S302|SCF|SGE|SMB|SMB|SMB',
-        'SCF|Caulfield|S302|SBY|SGE|SMB|SMB|SMB',
-        'SCH|Cheltenham|S312|SMB,SCS,SMD|SKS|SMB|SMB|SMB',
-        'SMB|Moorabbin|S312|SCH,SCS,SMD|SKS|SMB|SMB|SMB',
-        'SMD|Mordialloc|S312|SMB,SCS,SCH|SKS|SMB|SMB|SMB',
-        'SCS|Chelsea|S312|SMB,SCH,SMD|SKS|SMB|SMB|SMB',
-      ],
-      'Dandenong (S303)': [
-        'SDG|Dandenong|S303|SSV|SGD|SGD|SGD|SGD',
-        'SSV|Springvale|S303|SDG|SGD|SGD|SGD|SGD',
-      ],
-      'Frankston (S304)': [
-        'SCD|Carrum Downs|S304|SFK|SFK|SFK|SSL|SSL',
-        'SFK|Frankston|S304|SCD|SFK|SFK|SSL|SSL',
-      ],
-      'Casey / Cardinia (S313)': [
-        'SBP|Bunyip|S313|SPK,SLL,SED,SKR|SCR|SCR|SCR|SCR',
-        'SED|Emerald|S313|SPK,SLL,SBP,SKR|SCR|SCR|SCR|SCR',
-        'SKR|Koo Wee Rup|S313|SPK,SLL,SBP,SED|SCR|SCR|SCR|SCR',
-        'SLL|Lang Lang|S313|SPK,SKR,SBP,SED|SCR|SCR|SCR|SCR',
-        'SPK|Pakenham|S313|SLL,SKR,SBP,SED|SCR|SCR|SCR|SCR',
-        'SCN|Cranbourne|S313|SEN,SNW|SCA|SCA|SNW|SCA',
-        'SEN|Endeavour Hills|S313|SCN,SNW|SCA|SCA|SNW|SCA',
-        'SNW|Narre Warren|S313|SCN,SEN|SCA|SCA|SNW|SCA',
-      ],
-      'Mornington Peninsula (S314)': [
-        'SDA|Dromana|S314|SMT,SRO,SRY,SSO,SHS|SMP|SMP|SSL|SSL',
-        'SRO|Rosebud|S314|SMT,SDA,SRY,SSO,SHS|SMP|SMP|SSL|SSL',
-        'SRY|Rye|S314|SMT,SDA,SRO,SSO,SHS|SMP|SMP|SSL|SSL',
-        'SSO|Sorrento|S314|SMT,SDA,SRY,SRO,SHS|SMP|SMP|SSL|SSL',
-        'SHS|Hastings|S314|SMT,SDA,SRY,SRO,SSO|SMP|SMP|SSL|SSL',
-        'SMT|Mornington|S314|SHS,SDA,SRY,SRO,SSO|SMP|SMP|SSL|SSL',
-      ],
+      'Prahran':               ['TBC|TBC — Prahran (S301/S311)|S301|||suburban'],
+      'Moorabbin':             ['TBC|TBC — Moorabbin (S302/S312)|S302|||suburban'],
+      'Dandenong':             ['TBC|TBC — Dandenong (S303)|S303|||suburban'],
+      'Frankston':             ['TBC|TBC — Frankston (S304)|S304|||suburban'],
+      'Casey / Cardinia':      ['TBC|TBC — Casey / Cardinia (S313)|S313|||suburban'],
+      'Mornington Peninsula':  ['TBC|TBC — Mornington Peninsula (S314)|S314|||suburban'],
     }
   },
   E: {
     label: 'Eastern',
     divisions: {
-      'Goulburn Valley': [
-        'ESP|Shepparton|GV||ESP|ESP|ESP|ESP',
-        'EMP|Mooroopna|GV||ESP|ESP|ESP|ESP',
-      ],
-      'Wangaratta': [
-        'EWT|Wangaratta|WA||EWT|EWT|EWT|EWT',
-        'ECB|Cobram|WA||EWT|EWT|EWT|EWT',
-        'ENM|Numurkah|WA||EWT|EWT|EWT|EWT',
-        'EYW|Yarrawonga|WA||EWT|ECB|EWT|ECB',
-      ],
-      'Morwell': [
-        'EMR|Morwell|MW||EMR|EMR|EMR|EMR',
-        'ETR|Traralgon|MW||EMR|EMR|EMR|EMR',
-        'ELE|Leongatha|MW||EMR|EMR|EMR|EMR',
-        'EWS|Wonthaggi|MW||EMR|EMR|EMR|EMR',
-      ],
-      'Bairnsdale': [
-        'EBA|Bairnsdale|BD||EBA|EBA|EBA|EBA',
-        'EOW|Orbost|BD||EBA|EBA|EBA|EBA',
-        'EML|Mallacoota|BD||EBA|EBA|EBA|EBA',
-      ],
+      'Boroondara / Manningham': ['TBC|TBC — Boroondara / Manningham (E401)|E401|||suburban'],
+      'Whitehorse / Monash':   ['TBC|TBC — Whitehorse / Monash (E411)|E411|||suburban'],
+      'Knox':                  ['TBC|TBC — Knox (E402)|E402|||suburban'],
+      'Yarra Ranges':          ['TBC|TBC — Yarra Ranges (E402)|E402|||suburban'],
+      'Goulburn Valley':       ['TBC|TBC — Goulburn Valley|GV|||suburban'],
+      'Wangaratta':            ['TBC|TBC — Wangaratta|WA|||suburban'],
+      'Morwell':               ['TBC|TBC — Morwell|MW|||suburban'],
+      'Bairnsdale':            ['TBC|TBC — Bairnsdale|BD|||suburban'],
     }
   },
   W: {
     label: 'Western',
     divisions: {
-      'Geelong (W201/W211)': [
-        'WCO|Corio|W201|WLA,WGL|WGL|WGL|WGL|WGL',
-        'WLA|Lara|W201|WCO,WGL|WGL|WGL|WGL|WGL',
-        'WGL|Geelong|W201|WCO,WLA|WGL|WGL|WGL|WGL',
-        'WDS|Drysdale|W201|WBR,WPA,WQC,WWP|WGL|WGL|WGL|WGL',
-        'WBR|Bellarine|W201|WDS,WPA,WQC,WWP|WGL|WGL|WGL|WGL',
-        'WPA|Portarlington|W201|WDS,WBR,WQC,WWP|WGL|WGL|WGL|WGL',
-        'WQC|Queenscliff|W201|WDS,WBR,WPA,WWP|WGL|WGL|WGL|WGL',
-        'WWP|Waurn Ponds|W201|WDS,WBR,WPA,WQC|WGL|WGL|WGL|WGL',
-        'WAG|Anglesea|W211|WLO,WTQ,WWI|WSF|WTQ|WGL|WTQ',
-        'WLO|Lorne|W211|WAG,WTQ,WWI|WSF|WTQ|WGL|WTQ',
-        'WTQ|Torquay|W211|WAG,WLO,WWI|WSF|WTQ|WGL|WTQ',
-        'WWI|Winchelsea|W211|WAG,WLO,WTQ|WSF|WTQ|WGL|WTQ',
-      ],
-      'Warrnambool': [
-        'WWR|Warrnambool|WR||WWR|WWR|WWR|WWR',
-        'WHA|Hamilton|WR||WWR|WWR|WWR|WWR',
-        'WCL|Colac|WR||WWR|WWR|WWR|WWR',
-        'WPF|Port Fairy|WR||WWR|WWR|WWR|WWR',
-      ],
-      'Bendigo': [
-        'WBI|Bendigo|WBI||WBI|WBI|WBI|WBI',
-        'WKY|Kyneton|WBI||WBI|WBI|WBI|WBI',
-        'WCS|Castlemaine|WBI||WBI|WBI|WBI|WBI',
-      ],
-      'Mildura': [
-        'WMI|Mildura|WMI||WMI|WMI|WMI|WMI',
-        'WSH|Swan Hill|WMI||WMI|WMI|WMI|WMI',
-        'WHR|Horsham|WMI||WMI|WMI|WMI|WMI',
-        'WKP|Kerang|WMI||WMI|WMI|WMI|WMI',
-      ],
+      'Geelong':               ['TBC|TBC — Geelong (W201/W211)|W201|||suburban'],
+      'Warrnambool':           ['TBC|TBC — Warrnambool|WR|||suburban'],
+      'Bendigo':               ['TBC|TBC — Bendigo|WBI|||suburban'],
+      'Mildura':               ['TBC|TBC — Mildura|WMI|||suburban'],
     }
   }
 };
 
-function parseStation(s){
-  const p=s.split('|');
-  return{code:p[0],name:p[1],div:p[2],backed:(p[3]||'').split(',').filter(x=>x),psa:p[4]||'',ciu:p[5]||'',cri:p[6]||'',hwp:p[7]||''};
+function parseStation(s) {
+  const p = s.split('|');
+  return {
+    code:           p[0] || '',
+    name:           p[1] || '',
+    div:            p[2] || '',
+    psa:            p[3] || '',
+    cri:            p[4] || '',
+    classification: p[5] || 'suburban',
+  };
 }
 
 // ═══════════════════════════════════════════════════════════
 // SERVICES LIST
 // ═══════════════════════════════════════════════════════════
 const SERVICES=[
-  {id:'cars',  icon:'🚗', name:'Station Cars',               desc:'General duties sedans. 200–299.'},
-  {id:'vans',  icon:'🚐', name:'Divisional Vans',            desc:'Cage vans for prisoner transport. 300–399.'},
-  {id:'hwp',   icon:'🏍️', name:'Highway Patrol',             desc:'Traffic enforcement & accident response. 600–699.'},
-  {id:'port',  icon:'🛡️', name:'PORT / Dist. Support',       desc:'Public Order Response & support units. 700–799.'},
-  {id:'ciu',   icon:'🔍', name:'CIU',                        desc:'Criminal Investigation Unit. 500–599.'},
-  {id:'fviu',  icon:'🏠', name:'FVIU',                       desc:'Family Violence Investigation Unit. 480–499.'},
-  {id:'socit', icon:'👶', name:'SOCIT',                      desc:'Sexual Offences & Child Investigations. 450–499.'},
-  {id:'cri',   icon:'🔬', name:'Crime Desk (CRI)',            desc:'Scene examination & forensics. 570–579.'},
-  {id:'rru',   icon:'⚡', name:'RRU',                        desc:'Regional Response Unit. 440–449.'},
-  {id:'dog',   icon:'🐕', name:'Dog Squad (CAN)',             desc:'Canine unit. Uses CAN prefix.'},
-  {id:'pacer', icon:'🧠', name:'PACER / MHaP',               desc:'Mental health co-response. 290–292.'},
-  {id:'sar',   icon:'🔦', name:'Search & Rescue (RES)',       desc:'Search & rescue. RES prefix, 400–459.'},
-  {id:'transit',icon:'🚆',name:'Transit Police (TST)',        desc:'Public transport policing. TST prefix.'},
-  {id:'sog',   icon:'🦅', name:'SOG / CIRT',                 desc:'Special Operations / CIRT. SCY/CIR prefix.'},
-  {id:'polair',icon:'🚁', name:'POLAIR',                     desc:'Air wing — helicopters & fixed wing.'},
-  {id:'hviu',  icon:'🚛', name:'Heavy Vehicle Unit (ROA)',    desc:'Heavy vehicle enforcement. ROA prefix.'},
-  {id:'mounted',icon:'🐴',name:'Mounted Branch (MOU)',        desc:'Mounted unit. MOU prefix, 800–899.'},
+  {id:'cars',   icon:'🚗', name:'Station Cars',            desc:'General duties sedans. 200–299.'},
+  {id:'vans',   icon:'🚐', name:'Divisional Vans',         desc:'Cage vans for prisoner transport. 300–399.'},
+  {id:'hwp',    icon:'🏍️', name:'Highway Patrol',          desc:'Traffic enforcement & accident response. 600–699.'},
+  {id:'port',   icon:'🛡️', name:'PORT / Dist. Support',    desc:'Public Order Response & support units. 700–799.'},
+  {id:'ciu',    icon:'🔍', name:'CIU',                     desc:'Criminal Investigation Unit. 500–599.'},
+  {id:'fviu',   icon:'🏠', name:'FVIU',                    desc:'Family Violence Investigation Unit. 480–499.'},
+  {id:'socit',  icon:'👶', name:'SOCIT',                   desc:'Sexual Offences & Child Investigations. 450–499.'},
+  {id:'cri',    icon:'🔬', name:'Crime Desk (CRI)',         desc:'Scene examination & forensics. 570–579.'},
+  {id:'rru',    icon:'⚡', name:'RRU',                     desc:'Regional Response Unit. 440–449.'},
+  {id:'dog',    icon:'🐕', name:'Dog Squad (CAN)',          desc:'Canine unit. Uses CAN prefix.'},
+  {id:'pacer',  icon:'🧠', name:'PACER / MHaP',            desc:'Mental health co-response. 290–292.'},
+  {id:'sar',    icon:'🔦', name:'Search & Rescue (RES)',    desc:'Search & rescue. RES prefix, 400–459.'},
+  {id:'transit',icon:'🚆', name:'Transit Police (TST)',     desc:'Public transport policing. TST prefix.'},
+  {id:'sog',    icon:'🦅', name:'SOG / CIRT',              desc:'Special Operations / CIRT. SCY/CIR prefix.'},
+  {id:'polair', icon:'🚁', name:'POLAIR',                  desc:'Air wing — helicopters & fixed wing.'},
+  {id:'hviu',   icon:'🚛', name:'Heavy Vehicle Unit (ROA)', desc:'Heavy vehicle enforcement. ROA prefix.'},
+  {id:'mounted',icon:'🐴', name:'Mounted Branch (MOU)',     desc:'Mounted unit. MOU prefix, 800–899.'},
 ];
 
 // ═══════════════════════════════════════════════════════════
 // APP STATE
 // ═══════════════════════════════════════════════════════════
-const S={stationCode:'',stationName:'',regionLabel:'',divisionLabel:'',backed:[],psa:'',ciu:'',cri:'',hwp:'',role:'suburban',selected:new Set()};
+const S = {
+  stationCode:'', stationName:'', regionLabel:'', divisionLabel:'',
+  psa:'', cri:'', role:'suburban',
+  selected: new Set()
+};
 
-// Per-service slider overrides: id -> count
-const OVERRIDES={};
+const OVERRIDES = {};
 
 setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-AU',{hour12:false})},1000);
 
@@ -483,7 +482,9 @@ function onRegion(){
   document.getElementById('selStation').innerHTML='<option value="">— Select Division first —</option>';
   document.getElementById('selStation').disabled=true;
   document.getElementById('roleCard').style.display='none';
-  if(r&&REGION_DATA[r])Object.keys(REGION_DATA[r].divisions).forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;dSel.appendChild(o)});
+  if(r&&REGION_DATA[r])Object.keys(REGION_DATA[r].divisions).forEach(d=>{
+    const o=document.createElement('option');o.value=d;o.textContent=d;dSel.appendChild(o);
+  });
 }
 function onDiv(){
   const r=document.getElementById('selRegion').value;
@@ -493,20 +494,38 @@ function onDiv(){
   sSel.disabled=!d;
   document.getElementById('roleCard').style.display='none';
   if(r&&d&&REGION_DATA[r]&&REGION_DATA[r].divisions[d])
-    REGION_DATA[r].divisions[d].forEach(entry=>{const st=parseStation(entry);const o=document.createElement('option');o.value=entry;o.textContent=`${st.name} (${st.code})`;sSel.appendChild(o)});
+    REGION_DATA[r].divisions[d].forEach(entry=>{
+      const st=parseStation(entry);
+      const o=document.createElement('option');
+      o.value=entry;
+      o.textContent=`${st.name} (${st.code})`;
+      sSel.appendChild(o);
+    });
 }
 function onStation(){
-  document.getElementById('roleCard').style.display=document.getElementById('selStation').value?'block':'none';
+  const entry = document.getElementById('selStation').value;
+  const roleCard = document.getElementById('roleCard');
+  roleCard.style.display = entry ? 'block' : 'none';
+  if (entry) {
+    const st = parseStation(entry);
+    // Pre-select classification from CSV if available
+    if (st.classification) {
+      document.getElementById('knownRole').value = st.classification;
+    }
+  }
 }
 function goStep2(){
   const sel=document.getElementById('selStation').value;
   if(!sel){alert('Please select a station.');return;}
   const st=parseStation(sel);
-  S.stationCode=st.code;S.stationName=st.name;S.backed=st.backed;S.psa=st.psa;S.ciu=st.ciu;S.cri=st.cri;S.hwp=st.hwp;
+  S.stationCode=st.code;
+  S.stationName=st.name;
+  S.psa=st.psa;
+  S.cri=st.cri;
+  S.role=document.getElementById('knownRole').value;
   const r=document.getElementById('selRegion').value;
   S.regionLabel=r?REGION_DATA[r].label:'';
   S.divisionLabel=document.getElementById('selDiv').value||'';
-  S.role=document.getElementById('knownRole').value;
   buildServiceGrid();
   go(2);
 }
@@ -809,13 +828,10 @@ function renderOutput(code,role,roleLabel,sections){
   narr+=`, the following vehicle lineup is suggested. Units are listed across all shifts — morning (0700), afternoon (1500) and night (2300) crews may appear together. Use the <strong>unit count sliders</strong> on each service block to adjust numbers up or down.`;
 
   let linksHtml='';
-  if(S.backed.length||S.psa){
+  if(S.psa||S.cri){
     const items=[
-      S.backed.length?`<div class="link-item"><div class="link-key">Backed By</div><div class="link-val">${S.backed.join(', ')}</div></div>`:'',
-      S.psa?`<div class="link-item"><div class="link-key">PSA</div><div class="link-val">${S.psa}</div></div>`:'',
-      S.ciu?`<div class="link-item"><div class="link-key">CIU</div><div class="link-val">${S.ciu}</div></div>`:'',
-      S.cri?`<div class="link-item"><div class="link-key">CRI</div><div class="link-val">${S.cri}</div></div>`:'',
-      S.hwp?`<div class="link-item"><div class="link-key">HWP</div><div class="link-val">${S.hwp}</div></div>`:'',
+      S.psa?`<div class="link-item"><div class="link-key">Police Service Area (PSA)</div><div class="link-val">${S.psa}</div></div>`:'',
+      S.cri?`<div class="link-item"><div class="link-key">Crime Desk (CRI)</div><div class="link-val">${S.cri}</div></div>`:'',
     ].filter(Boolean).join('');
     linksHtml=`<div class="card" style="margin-bottom:14px"><div class="card-head"><div class="dot"></div>Station Support Links</div><div class="card-body"><div class="links-grid">${items}</div></div></div>`;
   }
@@ -873,19 +889,16 @@ function renderOutput(code,role,roleLabel,sections){
     sec.units.slice(0,count).forEach(u=>{exp+=`  ${u.cs.padEnd(12)} ${u.desc.padEnd(36)} [${u.shifts.join('/')}]\n`;});
     exp+='\n';
   });
-  if(S.backed.length||S.psa){
+  if(S.psa||S.cri){
     exp+=`STATION SUPPORT LINKS\n`;
-    if(S.backed.length)exp+=`  Backed By : ${S.backed.join(', ')}\n`;
-    if(S.psa)exp+=`  PSA       : ${S.psa}\n`;
-    if(S.ciu)exp+=`  CIU       : ${S.ciu}\n`;
-    if(S.cri)exp+=`  CRI       : ${S.cri}\n`;
-    if(S.hwp)exp+=`  HWP       : ${S.hwp}\n`;
+    if(S.psa)exp+=`  PSA (Police Service Area) : ${S.psa}\n`;
+    if(S.cri)exp+=`  Crime Desk (CRI)          : ${S.cri}\n`;
   }
 
   const expDisplay=exp
     .replace(/^(VICTORIA POLICE.*)/gm,'<span class="ex-head">$1</span>')
     .replace(/^([═─]+)/gm,'<span class="ex-cmt">$1</span>')
-    .replace(/^(Station|Division|Region|Role|Units|Backed|PSA|CIU|CRI|HWP)(\s*:.*)/gm,'<span class="ex-cmt">$1$2</span>')
+    .replace(/^(Station|Division|Region|Role|Units|PSA|Crime Desk)(\s*.*)/gm,'<span class="ex-cmt">$1$2</span>')
     .replace(/^([A-Z][A-Z &\/\(\)]+\n)/gm,'<span class="ex-sec">$1</span>')
     .replace(/\b([A-Z]{2,7}[0-9]{2,4})\b/g,'<span class="ex-cs">$1</span>');
 
@@ -971,13 +984,10 @@ function rebuildExport(){
     sec.units.slice(0,count).forEach(u=>{exp+=`  ${u.cs.padEnd(12)} ${u.desc.padEnd(36)} [${u.shifts.join('/')}]\n`;});
     exp+='\n';
   });
-  if(S.backed.length||S.psa){
+  if(S.psa||S.cri){
     exp+=`STATION SUPPORT LINKS\n`;
-    if(S.backed.length)exp+=`  Backed By : ${S.backed.join(', ')}\n`;
-    if(S.psa)exp+=`  PSA       : ${S.psa}\n`;
-    if(S.ciu)exp+=`  CIU       : ${S.ciu}\n`;
-    if(S.cri)exp+=`  CRI       : ${S.cri}\n`;
-    if(S.hwp)exp+=`  HWP       : ${S.hwp}\n`;
+    if(S.psa)exp+=`  PSA (Police Service Area) : ${S.psa}\n`;
+    if(S.cri)exp+=`  Crime Desk (CRI)          : ${S.cri}\n`;
   }
 
   const raw=document.getElementById('expRaw');
@@ -986,7 +996,7 @@ function rebuildExport(){
   const expDisplay=exp
     .replace(/^(VICTORIA POLICE.*)/gm,'<span class="ex-head">$1</span>')
     .replace(/^([═─]+)/gm,'<span class="ex-cmt">$1</span>')
-    .replace(/^(Station|Division|Region|Role|Units|Backed|PSA|CIU|CRI|HWP)(\s*:.*)/gm,'<span class="ex-cmt">$1$2</span>')
+    .replace(/^(Station|Division|Region|Role|Units|PSA|Crime Desk)(\s*.*)/gm,'<span class="ex-cmt">$1$2</span>')
     .replace(/^([A-Z][A-Z &\/\(\)]+\n)/gm,'<span class="ex-sec">$1</span>')
     .replace(/\b([A-Z]{2,7}[0-9]{2,4})\b/g,'<span class="ex-cs">$1</span>');
   const pre=document.getElementById('expPre');
@@ -1000,5 +1010,6 @@ function copyExport(){
   });
 }
 </script>
+<script>loadCSV();</script>
 </body>
 </html>
