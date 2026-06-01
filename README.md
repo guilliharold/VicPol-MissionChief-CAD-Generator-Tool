@@ -9,3 +9,5 @@
 • Seperate State Highway Patrol bikes and cars from Highway Patrol.
 
 • Add a script.js file to take some load off of index.html
+
+• Change the options on the Station Classification section to only show the Classification option as the Supervisor number is not necessary to choose as this should be added regardless based on station Classification. 
