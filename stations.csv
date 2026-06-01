@@ -70,9 +70,9 @@ TBC,Station TBC,E,Eastern,Nunawading (ED1),ED1,,suburban
 # Knox (ED2)
 TBC,Station TBC,E,Eastern,Knox (ED2),ED2,,suburban
 # Goulburn Valley (ED3)
-TBC,Station TBC,E,Eastern,Goulburn Valley (ED3),ED3,,suburban
+ESP,Shepparton,E,Eastern,Goulburn Valley (ED3),ED3,ESP,regional
 # Wangaratta (ED4)
-TBC,Station TBC,E,Eastern,Wangaratta (ED4),ED4,,suburban
+EWT,Wangaratta,E,Eastern,Wangaratta (ED4),ED4,EWT,regional
 # Morwell (ED5)
 TBC,Station TBC,E,Eastern,Morwell (ED5),ED5,,suburban
 # Bairnsdale (ED6)
