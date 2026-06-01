@@ -118,7 +118,7 @@
 //
 // CSV columns (header row required):
 //   code, name, region, region_label, division, div_code,
-//   psa, classification
+//   psa, hwp, ciu, classification
 // ═══════════════════════════════════════════════════════════
 async function loadCSV() {
   try {
@@ -173,6 +173,8 @@ function ingestCSV(text) {
     const divisionName   = f[idx('division')]         || 'Unknown Division';
     const divCode        = f[idx('div_code')]         || '';
     const psa            = f[idx('psa')]              || '';
+    const hwp            = f[idx('hwp')]              || '';
+    const ciu            = f[idx('ciu')]              || '';
     const classification = f[idx('classification')]   || 'suburban';
 
     if (!code || !name || !regionKey) continue;
@@ -188,9 +190,9 @@ function ingestCSV(text) {
       REGION_DATA[regionKey].divisions[divisionName] = [];
     }
 
-    // 'CODE|Name|DivCode|PSA|classification'
+    // 'CODE|Name|DivCode|PSA|HWP|CIU|classification'
     REGION_DATA[regionKey].divisions[divisionName].push(
-      `${code}|${name}|${divCode}|${psa}|${classification}`
+      `${code}|${name}|${divCode}|${psa}|${hwp}|${ciu}|${classification}`
     );
   }
 
@@ -222,48 +224,48 @@ function populateRegionDropdown() {
 // ═══════════════════════════════════════════════════════════
 // STATION DATA — structural template
 // Real station entries are replaced by CSV at load time.
-// Each inline entry: 'CODE|Name|DivCode|PSA|classification'
+// Each inline entry: 'CODE|Name|DivCode|PSA|HWP|CIU|classification'
 // ═══════════════════════════════════════════════════════════
 const REGION_DATA = {
   N: {
     label: 'North West Metro',
     divisions: {
-      'Melbourne (ND1)':     ['TBC1|Station TBC|ND1||suburban', 'TBC2|Station TBC|ND1||suburban'],
-      'Westgate (ND2)':      ['TBC1|Station TBC|ND2||suburban', 'TBC2|Station TBC|ND2||suburban'],
-      'Brimbank (ND3)':      ['TBC1|Station TBC|ND3||suburban', 'TBC2|Station TBC|ND3||suburban'],
-      'Fawkner (ND4)':       ['TBC1|Station TBC|ND4||suburban', 'TBC2|Station TBC|ND4||suburban'],
-      'Diamond Creek (ND5)': ['TBC1|Station TBC|ND5||suburban', 'TBC2|Station TBC|ND5||suburban'],
+      'Melbourne (ND1)':     ['\1||||suburban', '\1||||suburban'],
+      'Westgate (ND2)':      ['\1||||suburban', '\1||||suburban'],
+      'Brimbank (ND3)':      ['\1||||suburban', '\1||||suburban'],
+      'Fawkner (ND4)':       ['\1||||suburban', '\1||||suburban'],
+      'Diamond Creek (ND5)': ['\1||||suburban', '\1||||suburban'],
     }
   },
   S: {
     label: 'Southern Metro',
     divisions: {
-      'Prahran (SD1)':    ['TBC1|Station TBC|SD1||suburban', 'TBC2|Station TBC|SD1||suburban'],
-      'Moorabbin (SD2)':  ['TBC1|Station TBC|SD2||suburban', 'TBC2|Station TBC|SD2||suburban'],
-      'Dandenong (SD3)':  ['TBC1|Station TBC|SD3||suburban', 'TBC2|Station TBC|SD3||suburban'],
-      'Frankston (SD4)':  ['TBC1|Station TBC|SD4||suburban', 'TBC2|Station TBC|SD4||suburban'],
+      'Prahran (SD1)':    ['\1||||suburban', '\1||||suburban'],
+      'Moorabbin (SD2)':  ['\1||||suburban', '\1||||suburban'],
+      'Dandenong (SD3)':  ['\1||||suburban', '\1||||suburban'],
+      'Frankston (SD4)':  ['\1||||suburban', '\1||||suburban'],
     }
   },
   E: {
     label: 'Eastern',
     divisions: {
-      'Nunawading (ED1)':     ['TBC1|Station TBC|ED1||suburban', 'TBC2|Station TBC|ED1||suburban'],
-      'Knox (ED2)':           ['TBC1|Station TBC|ED2||suburban', 'TBC2|Station TBC|ED2||suburban'],
-      'Goulburn Valley (ED3)':['TBC1|Station TBC|ED3||suburban', 'TBC2|Station TBC|ED3||suburban'],
-      'Wangaratta (ED4)':     ['TBC1|Station TBC|ED4||suburban', 'TBC2|Station TBC|ED4||suburban'],
-      'Morwell (ED5)':        ['TBC1|Station TBC|ED5||suburban', 'TBC2|Station TBC|ED5||suburban'],
-      'Bairnsdale (ED6)':     ['TBC1|Station TBC|ED6||suburban', 'TBC2|Station TBC|ED6||suburban'],
+      'Nunawading (ED1)':     ['\1||||suburban', '\1||||suburban'],
+      'Knox (ED2)':           ['\1||||suburban', '\1||||suburban'],
+      'Goulburn Valley (ED3)':['\1||||suburban', '\1||||suburban'],
+      'Wangaratta (ED4)':     ['\1||||suburban', '\1||||suburban'],
+      'Morwell (ED5)':        ['\1||||suburban', '\1||||suburban'],
+      'Bairnsdale (ED6)':     ['\1||||suburban', '\1||||suburban'],
     }
   },
   W: {
     label: 'Western',
     divisions: {
-      'Geelong (WD1)':     ['TBC1|Station TBC|WD1||suburban', 'TBC2|Station TBC|WD1||suburban'],
-      'Warrnambool (WD2)': ['TBC1|Station TBC|WD2||suburban', 'TBC2|Station TBC|WD2||suburban'],
-      'Ballarat (WD3)':    ['TBC1|Station TBC|WD3||suburban', 'TBC2|Station TBC|WD3||suburban'],
-      'Horsham (WD4)':     ['TBC1|Station TBC|WD4||suburban', 'TBC2|Station TBC|WD4||suburban'],
-      'Bendigo (WD5)':     ['TBC1|Station TBC|WD5||suburban', 'TBC2|Station TBC|WD5||suburban'],
-      'Mildura (WD6)':     ['TBC1|Station TBC|WD6||suburban', 'TBC2|Station TBC|WD6||suburban'],
+      'Geelong (WD1)':     ['\1||||suburban', '\1||||suburban'],
+      'Warrnambool (WD2)': ['\1||||suburban', '\1||||suburban'],
+      'Ballarat (WD3)':    ['\1||||suburban', '\1||||suburban'],
+      'Horsham (WD4)':     ['\1||||suburban', '\1||||suburban'],
+      'Bendigo (WD5)':     ['\1||||suburban', '\1||||suburban'],
+      'Mildura (WD6)':     ['\1||||suburban', '\1||||suburban'],
     }
   }
 };
@@ -275,7 +277,9 @@ function parseStation(s) {
     name:           p[1] || '',
     div:            p[2] || '',
     psa:            p[3] || '',
-    classification: p[4] || 'suburban',
+    hwp:            p[4] || '',
+    ciu:            p[5] || '',
+    classification: p[6] || 'suburban',
   };
 }
 
@@ -306,7 +310,7 @@ const SERVICES=[
 // ═══════════════════════════════════════════════════════════
 const S = {
   stationCode:'', stationName:'', regionLabel:'', divisionLabel:'',
-  psa:'', role:'suburban',
+  psa:'', hwp:'', ciu:'', role:'suburban',
   selected: new Set()
 };
 
@@ -377,6 +381,8 @@ function goStep2(){
   S.stationCode=st.code;
   S.stationName=st.name;
   S.psa=st.psa;
+  S.hwp=st.hwp;
+  S.ciu=st.ciu;
   S.role=document.getElementById('knownRole').value;
   const r=document.getElementById('selRegion').value;
   S.regionLabel=r?REGION_DATA[r].label:'';
@@ -698,8 +704,13 @@ function renderOutput(code,role,roleLabel,sections){
   narr+=`, the following vehicle lineup is suggested. Units are listed across all shifts — morning (0700), afternoon (1500) and night (2300) crews may appear together. Use the <strong>unit count sliders</strong> on each service block to adjust numbers up or down.`;
 
   let linksHtml='';
-  if(S.psa){
-    linksHtml=`<div class="card" style="margin-bottom:14px"><div class="card-head"><div class="dot"></div>Station Support Links</div><div class="card-body"><div class="links-grid"><div class="link-item"><div class="link-key">Police Service Area (PSA)</div><div class="link-val">${resolveStationLabel(S.psa)}</div></div></div></div></div>`;
+  if(S.psa||S.hwp||S.ciu){
+    const linkItems=[
+      S.psa?`<div class="link-item"><div class="link-key">Police Service Area (PSA)</div><div class="link-val">${resolveStationLabel(S.psa)}</div></div>`:'',
+      S.hwp?`<div class="link-item"><div class="link-key">Highway Patrol (HWP)</div><div class="link-val">${resolveStationLabel(S.hwp)}</div></div>`:'',
+      S.ciu?`<div class="link-item"><div class="link-key">Crime Investigation Unit (CIU)</div><div class="link-val">${resolveStationLabel(S.ciu)}</div></div>`:'',
+    ].filter(Boolean).join('');
+    linksHtml=`<div class="card" style="margin-bottom:14px"><div class="card-head"><div class="dot"></div>Station Support Links</div><div class="card-body"><div class="links-grid">${linkItems}</div></div></div>`;
   }
 
   let blocksHtml='';
@@ -754,9 +765,11 @@ function renderOutput(code,role,roleLabel,sections){
     sec.units.slice(0,count).forEach(u=>{exp+=`  ${u.cs.padEnd(12)} ${u.desc}\n`;});
     exp+='\n';
   });
-  if(S.psa){
+  if(S.psa||S.hwp||S.ciu){
     exp+=`STATION SUPPORT LINKS\n`;
-    exp+=`  PSA (Police Service Area) : ${resolveStationLabel(S.psa)}\n`;
+    if(S.psa) exp+=`  Police Service Area (PSA)     : ${resolveStationLabel(S.psa)}\n`;
+    if(S.hwp) exp+=`  Highway Patrol (HWP)          : ${resolveStationLabel(S.hwp)}\n`;
+    if(S.ciu) exp+=`  Crime Investigation Unit (CIU) : ${resolveStationLabel(S.ciu)}\n`;
   }
 
   const expDisplay=exp
@@ -841,9 +854,11 @@ function rebuildExport(){
     sec.units.slice(0,count).forEach(u=>{exp+=`  ${u.cs.padEnd(12)} ${u.desc}\n`;});
     exp+='\n';
   });
-  if(S.psa){
+  if(S.psa||S.hwp||S.ciu){
     exp+=`STATION SUPPORT LINKS\n`;
-    exp+=`  PSA (Police Service Area) : ${resolveStationLabel(S.psa)}\n`;
+    if(S.psa) exp+=`  Police Service Area (PSA)     : ${resolveStationLabel(S.psa)}\n`;
+    if(S.hwp) exp+=`  Highway Patrol (HWP)          : ${resolveStationLabel(S.hwp)}\n`;
+    if(S.ciu) exp+=`  Crime Investigation Unit (CIU) : ${resolveStationLabel(S.ciu)}\n`;
   }
 
   const raw=document.getElementById('expRaw');
