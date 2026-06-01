@@ -26,7 +26,7 @@ Suburban Police Stations provide frontline policing services to established resi
 
 These stations handle a diverse range of incidents including family violence, property crime, traffic enforcement, community engagement, and local investigations. While smaller than major metropolitan facilities, suburban stations maintain strong operational capabilities and frequently support neighbouring divisions during significant incidents and planned operations.
 
-Examples: Box Hill, Dandenong, Prahran, Frankston, Ringwood, Sunshine, etc.
+Examples: Box Hill, Dandenong, Frankston, Ringwood, Sunshine, etc.
 
 ### Regional
 Regional Police Stations serve as primary policing hubs for Victoria's major regional cities and surrounding districts. In addition to providing frontline response services, these stations often coordinate policing activities across multiple surrounding towns and rural communities.
