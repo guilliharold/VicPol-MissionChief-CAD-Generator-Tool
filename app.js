@@ -304,7 +304,7 @@ function buildOutput() {
     ];
     // 252 only for 24-hour stations — non-24hr runs a single 251 subject to staffing
     if (is24hr) {
-      supUnits.push({ cs: c + '252', desc: 'District Patrol Supervisor (SGT) — Night shift', shifts: ['NS'] });
+      supUnits.push({ cs: c + '252', desc: 'District Patrol Supervisor (SGT)', shifts: ['MS', 'AS', 'NS'] });
     }
     // Senior ranks for 24-hour stations
     if (isLarge) {
@@ -332,15 +332,19 @@ function buildOutput() {
     },
     {
       id: 'hwp', icon: '🏍️', name: 'Highway Patrol', pool: buildHWPPool(c),
-      note: `HWP is the first choice for accidents with trapped or injured persons. Cars 610–649, solo motorcycle 600–609, Q Cars (unmarked) 630–639, SGT 650–659, S/SGT 660–669. Fixed base at ${c}906.`,
+      note: `HWP is the first choice for accidents with trapped or injured persons. Cars 610–649, solo motorcycle 600–609, Q Cars (unmarked) 630–639 — at least one Q Car is included when 4 or more units are selected. SGT 650–659, S/SGT 660–669. Fixed base at ${c}906.`,
     },
     {
       id: 'ciu', icon: '🔍', name: 'CIU', pool: buildCIUPool(c),
       note: `CIU investigates serious crime. Morning: ${c}507. Afternoon: ${c}503/${c}520. Night: ${c}541–546 with supervisor at ${c}550. Fixed base at ${c}905.`,
     },
     {
-      id: 'port', icon: '🛡️', name: 'PORT / District Support', pool: buildPORTPool(c),
-      note: `District Support uses 700–799. Special duties 700–709, events/emergency 730–739, foot patrol 740–744, licensing 745–749, bicycle 780–782, court/hospital guards 783–786.`,
+      id: 'port', icon: '🛡️', name: 'PORT', pool: buildPORTPool(),
+      note: `PORT (Public Order Response Team) uses the <strong>POR</strong> prefix — not the station code. General units 600–649, SGT 650–659, S/SGT 660–669. POR units operate across the region and are not station-specific.`,
+    },
+    {
+      id: 'dss', icon: '🔧', name: 'District Support Services', pool: buildDSSPool(c),
+      note: `District Support uses the station code prefix, range 700–799. Special duties 700–709, regional taskforces 700–729, events/emergency 730–739, foot patrol 740–744, licensing 745–749, bicycle 780–782, court/hospital guards 783–786.`,
     },
     {
       id: 'rru', icon: '⚡', name: 'RRU', pool: buildRRUPool(c),
@@ -425,13 +429,23 @@ function buildOutput() {
   });
 
   if (S.selected.has('sog')) sections.push({
-    id: 'sog', icon: '🦅', name: 'SOG / CIRT', pool: null,
+    id: 'sog', icon: '🦅', name: 'SOG (Special Operations Group)', pool: null,
     units: [
-      { cs: 'SCY200', desc: 'Special Operations Group Unit', shifts: ['MS', 'AS', 'NS'] },
-      { cs: 'SCY210', desc: 'SOG — Additional unit',         shifts: ['MS', 'AS'] },
-      { cs: 'CIR200', desc: 'CIRT Unit',                     shifts: ['MS', 'AS', 'NS'] },
+      { cs: 'SCY200', desc: 'Special Operations Group Unit',            shifts: ['MS', 'AS', 'NS'] },
+      { cs: 'SCY210', desc: 'Special Operations Group Unit',            shifts: ['MS', 'AS', 'NS'] },
+      { cs: 'SCY250', desc: 'SOG Sergeant',                            shifts: ['MS', 'AS'] },
     ],
-    note: 'SOG uses SCY prefix. CIRT uses CIR prefix, range 200–899. Region-wide assets deployed as required.',
+    note: 'SOG uses the SCY prefix. State-wide specialist tactical resource — deployed as required, not station-specific.',
+  });
+
+  if (S.selected.has('cirt')) sections.push({
+    id: 'cirt', icon: '🎯', name: 'CIRT (Critical Incident Response Team)', pool: null,
+    units: [
+      { cs: 'CIR200', desc: 'CIRT Unit', shifts: ['MS', 'AS', 'NS'] },
+      { cs: 'CIR210', desc: 'CIRT Unit', shifts: ['MS', 'AS', 'NS'] },
+      { cs: 'CIR250', desc: 'CIRT Sergeant', shifts: ['MS', 'AS'] },
+    ],
+    note: 'CIRT uses the CIR prefix, range 200–899. Deployed for critical incidents requiring specialist negotiation and response capability. Region-wide asset.',
   });
 
   if (S.selected.has('polair')) sections.push({
