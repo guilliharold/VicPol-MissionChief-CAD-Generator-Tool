@@ -86,10 +86,14 @@ TBC,Station TBC,S,Southern Metro,Frankston (SD4),SD4,,,,metro_24
 # Nunawading (ED1)
 TBC,Station TBC,E,Eastern,Nunawading (ED1),ED1,,,,metro_24
 # Knox (ED2)
-TBC,Station TBC,E,Eastern,Knox (ED2),ED2,,,,metro_24
+EKX,Knox,E,Eastern,Knox (ED2),ED2,EKX,ENG,EKX,metro_24
 # Goulburn Valley (ED3)
+EDI,Dookie,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_non24
+EMP,Mooroopna,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_non24
 ESP,Shepparton,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_24
 # Wangaratta (ED4)
+ECB,Cobram,E,Eastern,Wangaratta (ED4),ED4,EWT,ECB,ECB,regional_non24
+ENM,Numurkah,E,Eastern,Wangaratta (ED4),ED4,EWT,ECB,ECB,regional_non24
 EWT,Wangaratta,E,Eastern,Wangaratta (ED4),ED4,EWT,EWT,EWT,regional_24
 # Morwell (ED5)
 TBC,Station TBC,E,Eastern,Morwell (ED5),ED5,,,,regional_24
