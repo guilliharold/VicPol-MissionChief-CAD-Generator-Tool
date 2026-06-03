@@ -111,10 +111,10 @@ const SERVICES = [
 // regional_24   — Regional, 24-hour hub station (e.g. Bendigo, Geelong)
 // regional_non24— Regional, non-24-hour station (e.g. Bright, Yarrawonga)
 const DEFAULTS = {
-  metro_24:      { cars: 12, vans: 6, hwp: 11, ciu: 10, port: 12, rru: 5 },
-  metro_non24:   { cars: 7,  vans: 3, hwp: 5,  ciu: 5,  port: 6,  rru: 3 },
-  regional_24:   { cars: 9,  vans: 4, hwp: 8,  ciu: 7,  port: 8,  rru: 4 },
-  regional_non24:{ cars: 3,  vans: 2, hwp: 2,  ciu: 2,  port: 2,  rru: 2 },
+  metro_24:      { cars: 10, vans: 4, hwp: 5, ciu: 4, port: 5, rru: 3 },
+  metro_non24:   { cars: 7,  vans: 3, hwp: 4,  ciu: 3,  port: 2,  rru: 2 },
+  regional_24:   { cars: 5,  vans: 2, hwp: 3,  ciu: 2,  port: 1,  rru: 1 },
+  regional_non24:{ cars: 2,  vans: 1, hwp: 2,  ciu: 1,  port: 0,  rru: 0 },
 };
 
 // Maximum units each scalable service pool can produce.
