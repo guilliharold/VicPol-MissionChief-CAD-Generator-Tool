@@ -84,23 +84,17 @@ TBC,Station TBC,S,Southern Metro,Dandenong (SD3),SD3,,,,metro_24
 TBC,Station TBC,S,Southern Metro,Frankston (SD4),SD4,,,,metro_24
 # ── EASTERN ──────────────────────────────────────────────────────────────────
 # Nunawading (ED1)
-TBC,Station TBC,E,Eastern,Nunawading (ED1),ED1,,,,metro_24
+ENG,Nunawading,E,Eastern,Nunawading (ED1),ED1,ENG,ENG,ENG,metro_24
 # Knox (ED2)
 EKX,Knox,E,Eastern,Knox (ED2),ED2,EKX,ENG,EKX,metro_24
 # Goulburn Valley (ED3)
-EDI,Dookie,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_non24
-EMP,Mooroopna,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_non24
-EMX,Murchison,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_non24
-ENI,Nagambie,E,Eastern,Goulburn Valley (ED3),ED3,ESY,ESY,ESY,regional_non24
 ESP,Shepparton,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_24
-ESY,Seymour,E,Eastern,Goulburn Valley (ED3),ED3,ESY,ESY,ESY,regional_24
-ETT,Tatura,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_non24
 # Wangaratta (ED4)
 EWT,Wangaratta,E,Eastern,Wangaratta (ED4),ED4,EWT,EWT,EWT,regional_24
 # Morwell (ED5)
-TBC,Station TBC,E,Eastern,Morwell (ED5),ED5,,,,regional_24
+EML,Morwell,E,Eastern,Morwell (ED5),ED5,EML,EML,EML,regional_24
 # Bairnsdale (ED6)
-TBC,Station TBC,E,Eastern,Bairnsdale (ED6),ED6,,,,regional_24
+EBL,Bairnsdale,E,Eastern,Bairnsdale (ED6),ED6,EBL,EBL,EBL,regional_24
 # ── WESTERN ──────────────────────────────────────────────────────────────────
 # Geelong (WD1)
 TBC,Station TBC,W,Western,Geelong (WD1),WD1,,,,regional_24
