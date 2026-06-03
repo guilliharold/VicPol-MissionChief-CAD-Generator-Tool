@@ -90,10 +90,12 @@ EKX,Knox,E,Eastern,Knox (ED2),ED2,EKX,ENG,EKX,metro_24
 # Goulburn Valley (ED3)
 EDI,Dookie,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_non24
 EMP,Mooroopna,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_non24
+EMX,Murchison,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_non24
+ENI,Nagambie,E,Eastern,Goulburn Valley (ED3),ED3,ESY,ESY,ESY,regional_non24
 ESP,Shepparton,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_24
+ESY,Seymour,E,Eastern,Goulburn Valley (ED3),ED3,ESY,ESY,ESY,regional_24
+ETT,Tatura,E,Eastern,Goulburn Valley (ED3),ED3,ESP,ESP,ESP,regional_non24
 # Wangaratta (ED4)
-ECB,Cobram,E,Eastern,Wangaratta (ED4),ED4,EWT,ECB,ECB,regional_non24
-ENM,Numurkah,E,Eastern,Wangaratta (ED4),ED4,EWT,ECB,ECB,regional_non24
 EWT,Wangaratta,E,Eastern,Wangaratta (ED4),ED4,EWT,EWT,EWT,regional_24
 # Morwell (ED5)
 TBC,Station TBC,E,Eastern,Morwell (ED5),ED5,,,,regional_24
