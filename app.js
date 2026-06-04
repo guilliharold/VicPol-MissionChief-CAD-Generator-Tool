@@ -290,7 +290,7 @@ function buildOutput() {
     metro_non24:    'Metropolitan (Non-24 Hours)',
     regional_24:    'Regional (24 Hours)',
     regional_non24: 'Regional (Non-24 Hours)',
-    single_member:  'Regional (Non-24 Hours, Single Member)',
+    regional_single:  'Regional (Single Member)',
   }[role] || 'Metropolitan (24 Hours)';
   const sections  = [];
 
@@ -298,7 +298,7 @@ function buildOutput() {
   if (document.getElementById('superRequired').value === 'yes') {
     const is24hr  = (role === 'metro_24' || role === 'regional_24');
     const isLarge = (role === 'metro_24' || role === 'regional_24');
-    const isSingleMember = (role === 'single_member');
+    const isSingleMember = (role === 'regional_single');
 
     let supUnits;
     let supNote;
@@ -526,7 +526,7 @@ function renderOutput(code, role, roleLabel, sections) {
     metro_non24:    'a metropolitan station maintaining ongoing policing coverage without continuous 24-hour public counter staffing',
     regional_24:    'a regional 24-hour hub providing continuous operational coverage across a large geographic area',
     regional_non24: 'a regional station maintaining policing coverage through mobile patrols and nearby hub station support',
-    single_member:  'a single member station providing a local policing presence, typically staffed by one officer operating a single vehicle',
+    regional_single:  'a single member station providing a local policing presence, typically staffed by one officer operating a single vehicle',
   }[role] || 'a general duties station';
 
   let narr = `For an ideal configuration at <strong>${S.stationName} Police Station (${code})</strong>, ${roleDesc}`;
@@ -693,7 +693,7 @@ function rebuildExport() {
     metro_non24:    'Metropolitan (Non-24 Hours)',
     regional_24:    'Regional (24 Hours)',
     regional_non24: 'Regional (Non-24 Hours)',
-    single_member:  'Regional (Non-24 Hours, Single Member)',
+    regional_single:  'Regional (Single Member)',
   }[role] || 'Metropolitan (24 Hours)';
   const sections  = window._sections;
 
