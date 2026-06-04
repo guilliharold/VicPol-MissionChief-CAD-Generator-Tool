@@ -290,6 +290,7 @@ function buildOutput() {
     metro_non24:    'Metropolitan (Non-24 Hours)',
     regional_24:    'Regional (24 Hours)',
     regional_non24: 'Regional (Non-24 Hours)',
+    single_member:  'Regional (Non-24 Hours, Single Member)',
   }[role] || 'Metropolitan (24 Hours)';
   const sections  = [];
 
@@ -297,25 +298,36 @@ function buildOutput() {
   if (document.getElementById('superRequired').value === 'yes') {
     const is24hr  = (role === 'metro_24' || role === 'regional_24');
     const isLarge = (role === 'metro_24' || role === 'regional_24');
+    const isSingleMember = (role === 'single_member');
 
-    const supUnits = [
-      { cs: c + '250', desc: 'Station Sergeant',                shifts: ['MS', 'AS', 'NS'] },
-      { cs: c + '251', desc: 'District Patrol Supervisor (SGT)', shifts: ['MS', 'AS', 'NS'] },
-    ];
-    // 252 only for 24-hour stations — non-24hr runs a single 251 subject to staffing
-    if (is24hr) {
-      supUnits.push({ cs: c + '252', desc: 'District Patrol Supervisor (SGT)', shifts: ['MS', 'AS', 'NS'] });
+    let supUnits;
+    let supNote;
+    if (isSingleMember) {
+      // Single member stations carry a 251 only — no 250, no 252, no senior ranks
+      supUnits = [
+        { cs: c + '251', desc: 'District Patrol Supervisor (SGT)', shifts: ['MS', 'AS', 'NS'] },
+      ];
+      supNote = 'Single member stations carry a single District Patrol SGT (251). There is no on-site Station SGT — supervision is coordinated from the nearest regional hub.';
+    } else {
+      supUnits = [
+        { cs: c + '250', desc: 'Station Sergeant',                shifts: ['MS', 'AS', 'NS'] },
+        { cs: c + '251', desc: 'District Patrol Supervisor (SGT)', shifts: ['MS', 'AS', 'NS'] },
+      ];
+      // 252 only for 24-hour stations — non-24hr runs a single 251 subject to staffing
+      if (is24hr) {
+        supUnits.push({ cs: c + '252', desc: 'District Patrol Supervisor (SGT)', shifts: ['MS', 'AS', 'NS'] });
+      }
+      // Senior ranks for 24-hour stations
+      if (isLarge) {
+        supUnits.push({ cs: c + '260', desc: 'Senior Sergeant',               shifts: ['MS', 'AS'] });
+        supUnits.push({ cs: c + '265', desc: 'Divisional Supervisor (S/SGT)', shifts: ['MS'] });
+        supUnits.push({ cs: c + '100', desc: 'Superintendent',                shifts: ['MS'] });
+      }
+      supNote = is24hr
+        ? 'Station SGT (250) attends incidents at the request of units already in attendance. District Patrol SGT (251/252) remains on mobile patrol for the duration of the shift.'
+          + (isLarge ? ' S/SGT (265) holds command and control responsibility.' : '')
+        : 'Station SGT (250) attends incidents at the request of units already in attendance. Non-24-hour stations operate a single District Patrol SGT (251) across available shifts, subject to staffing.';
     }
-    // Senior ranks for 24-hour stations
-    if (isLarge) {
-      supUnits.push({ cs: c + '260', desc: 'Senior Sergeant',               shifts: ['MS', 'AS'] });
-      supUnits.push({ cs: c + '265', desc: 'Divisional Supervisor (S/SGT)', shifts: ['MS'] });
-      supUnits.push({ cs: c + '100', desc: 'Superintendent',                shifts: ['MS'] });
-    }
-    const supNote = is24hr
-      ? 'Station SGT (250) attends incidents at the request of units already in attendance. District Patrol SGT (251/252) remains on mobile patrol for the duration of the shift.'
-        + (isLarge ? ' S/SGT (265) holds command and control responsibility.' : '')
-      : 'Station SGT (250) attends incidents at the request of units already in attendance. Non-24-hour stations operate a single District Patrol SGT (251) across available shifts, subject to staffing.';
 
     sections.push({ id: '_sup', icon: '⭐', name: 'Command & Supervision', units: supUnits, pool: null, note: supNote });
   }
@@ -514,6 +526,7 @@ function renderOutput(code, role, roleLabel, sections) {
     metro_non24:    'a metropolitan station maintaining ongoing policing coverage without continuous 24-hour public counter staffing',
     regional_24:    'a regional 24-hour hub providing continuous operational coverage across a large geographic area',
     regional_non24: 'a regional station maintaining policing coverage through mobile patrols and nearby hub station support',
+    single_member:  'a single member station providing a local policing presence, typically staffed by one officer operating a single vehicle',
   }[role] || 'a general duties station';
 
   let narr = `For an ideal configuration at <strong>${S.stationName} Police Station (${code})</strong>, ${roleDesc}`;
@@ -680,6 +693,7 @@ function rebuildExport() {
     metro_non24:    'Metropolitan (Non-24 Hours)',
     regional_24:    'Regional (24 Hours)',
     regional_non24: 'Regional (Non-24 Hours)',
+    single_member:  'Regional (Non-24 Hours, Single Member)',
   }[role] || 'Metropolitan (24 Hours)';
   const sections  = window._sections;
 
