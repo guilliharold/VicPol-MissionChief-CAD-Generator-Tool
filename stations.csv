@@ -60,10 +60,6 @@
 #                                   One officer, one vehicle (station car or divisional van only)
 #                                   e.g. Dookie, Elmore, Katamatite, Sea Lake, Tungamah
 #
-#                  regional_single = Regional, non-24-hour single member station
-#                                   One officer covers all duties; response from nearest hub
-#                                   e.g. Licola, Omeo, Rawson, Tidal River
-#
 # NOTES
 #   • Leave a field blank rather than writing N/A or — (just keep the comma).
 #   • classification controls how many units the tool generates by default.
