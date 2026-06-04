@@ -56,9 +56,9 @@
 #                                   Coverage via mobile patrols and nearby hub station support
 #                                   e.g. Bright, Echuca, Horsham, Portland, Yarrawonga
 #
-#                  single_member  = Regional, non-24-hour, single officer station
+#                  regional_single  = Regional, non-24-hour, single officer station
 #                                   One officer, one vehicle (station car or divisional van only)
-#                                   e.g. Dimboola, Inglewood, Numurkah, Tallangatta
+#                                   e.g. Dookie, Elmore, Katamatite, Sea Lake, Tungamah
 #
 #                  regional_single = Regional, non-24-hour single member station
 #                                   One officer covers all duties; response from nearest hub
