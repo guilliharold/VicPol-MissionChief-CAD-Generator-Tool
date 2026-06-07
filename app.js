@@ -18,6 +18,8 @@ const S = {
   ciu:           '',
   role:          'metro_24',
   selected:      new Set(),
+  hwpSolo:       false,  // include HWP solo motorcycle units
+  trfSolo:       false,  // include TRF solo motorcycle units
 };
 
 // Per-service slider overrides (service id → unit count)
@@ -212,6 +214,32 @@ function onStation() {
   }
 }
 
+function updateSoloToggles() {
+  const wrap = document.getElementById('soloToggles');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  const makeToggle = (id, label, stateKey) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;cursor:pointer;user-select:none;';
+    const checked = S[stateKey];
+    row.innerHTML = `
+      <div style="width:18px;height:18px;border-radius:3px;border:2px solid ${checked ? 'var(--blue)' : 'var(--border)'};background:${checked ? 'var(--blue)' : 'transparent'};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;flex-shrink:0;">${checked ? '✓' : ''}</div>
+      <div>
+        <div style="font-family:var(--head);font-size:13px;font-weight:600;letter-spacing:0.5px;">🏍️ ${label}</div>
+        <div style="font-size:12px;color:var(--mid);margin-top:2px;">Include solo motorcycle units in this service's lineup</div>
+      </div>`;
+    row.onclick = () => {
+      S[stateKey] = !S[stateKey];
+      updateSoloToggles();
+    };
+    wrap.appendChild(row);
+  };
+
+  if (S.selected.has('hwp')) makeToggle('hwp', 'HWP Solo Motorcycle', 'hwpSolo');
+  if (S.selected.has('trf')) makeToggle('trf', 'State Highway Patrol Solo Motorcycle', 'trfSolo');
+}
+
 function goStep2() {
   const sel = document.getElementById('selStation').value;
   if (!sel) { alert('Please select a station.'); return; }
@@ -260,9 +288,18 @@ function buildServiceGrid() {
         el.classList.add('on');
         el.querySelector('.svc-check').textContent = '✓';
       }
+      // Show/hide solo toggles when HWP or TRF selection changes
+      updateSoloToggles();
     };
     g.appendChild(el);
   });
+
+  // Solo motorcycle toggles — appear below the service grid when HWP/TRF selected
+  const soloWrap = document.createElement('div');
+  soloWrap.id = 'soloToggles';
+  soloWrap.style.cssText = 'grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; margin-top: 4px;';
+  g.parentElement.appendChild(soloWrap);
+  updateSoloToggles();
 }
 
 
@@ -329,6 +366,18 @@ function buildOutput() {
         : 'Station SGT (250) attends incidents at the request of units already in attendance. Non-24-hour stations operate a single District Patrol SGT (251) across available shifts, subject to staffing.';
     }
 
+    // Specialist supervisors — appended when relevant services are selected
+    if (S.selected.has('hwp')) {
+      supUnits.push({ cs: c + '650', desc: 'HWP Sergeant',        shifts: ['MS', 'AS'] });
+      supUnits.push({ cs: c + '651', desc: 'HWP Sergeant',        shifts: ['NS'] });
+      supUnits.push({ cs: c + '661', desc: 'HWP Senior Sergeant', shifts: ['MS'] });
+    }
+    if (S.selected.has('trf')) {
+      supUnits.push({ cs: 'TRF650', desc: 'State Highway Patrol — Sergeant',        shifts: ['MS', 'AS'] });
+      supUnits.push({ cs: 'TRF651', desc: 'State Highway Patrol — Sergeant',        shifts: ['NS'] });
+      supUnits.push({ cs: 'TRF661', desc: 'State Highway Patrol — Senior Sergeant', shifts: ['MS'] });
+    }
+
     sections.push({ id: '_sup', icon: '⭐', name: 'Command & Supervision', units: supUnits, pool: null, note: supNote });
   }
 
@@ -343,12 +392,14 @@ function buildOutput() {
       note: `Vans use 300–399. Shift convention mirrors cars: 30<strong>7</strong>=morning, 30<strong>3</strong>=afternoon, 31<strong>1</strong>=night. Typically crewed by 2 officers and carry a prisoner cage.`,
     },
     {
-      id: 'hwp', icon: '🚔', name: 'Highway Patrol', pool: buildHWPPool(c),
-      note: `Local Highway Patrol uses the station code prefix. Marked cars 610–629, Q Cars (unmarked) 630–639 — roughly one Q Car for every two marked cars. Solo motorcycle (600–609) is station-based but uncommon; it appears only at higher unit counts. SGT 650–659, S/SGT 660–669. Fixed base at ${c}906.`,
+      id: 'hwp', icon: '🚔', name: 'Highway Patrol',
+      pool: S.hwpSolo ? [...buildHWPPool(c), ...buildHWPSoloUnits(c)] : buildHWPPool(c),
+      note: `Local Highway Patrol uses the station code prefix. Marked cars 610–629, Q Cars (unmarked) 630–639 — one Q Car per three marked cars. Supervisors (SGT 650, S/SGT 661) appear in <strong>Command & Supervision</strong> above.${S.hwpSolo ? ' Solo motorcycle units (600–601) are included.' : ''}`,
     },
     {
-      id: 'trf', icon: '🚓', name: 'State Highway Patrol', pool: buildTRFPool(),
-      note: `State Highway Patrol uses the <strong>TRF</strong> prefix. Marked cars 610–629, Q Cars (unmarked) 630–639 follow the same 2-marked-to-1-unmarked ratio. Solo motorcycles (TRF600–609) are included in the same pool and appear at higher unit counts — adjust the slider to include or exclude them. SGT 650–659, S/SGT 660–669. Base TRF906.`,
+      id: 'trf', icon: '🚓', name: 'State Highway Patrol',
+      pool: S.trfSolo ? [...buildTRFPool(), ...buildTRFSoloUnits()] : buildTRFPool(),
+      note: `State Highway Patrol uses the <strong>TRF</strong> prefix. Marked cars TRF610–629, Q Cars (unmarked) TRF630–639 — one Q Car per three marked cars. Supervisors (TRF650, TRF661) appear in <strong>Command & Supervision</strong> above.${S.trfSolo ? ' Solo motorcycle units (TRF600–603) are included.' : ''}`,
     },
     {
       id: 'ciu', icon: '🔍', name: 'CIU', pool: buildCIUPool(c),
