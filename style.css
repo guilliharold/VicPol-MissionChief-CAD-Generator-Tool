@@ -826,24 +826,37 @@ input[type="range"] {
    Spans the full grid width via grid-column: 1 / -1.
    ============================================================================= */
 
+/* Wrapper — one grid cell; card and sub-panel stack vertically inside */
+.svc-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.svc-wrapper .svc-item {
+  flex: 1;
+}
+
+/* When selected and a sub-panel is present, square off the card's bottom corners */
+.svc-wrapper .svc-item.on {
+  border-radius: 7px 7px 0 0;
+  border-bottom-color: transparent;
+}
+
 .svc-subpanel {
-  grid-column: 1 / -1;
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
   overflow: hidden;
   /* Slide-open animation */
   max-height: 0;
   opacity: 0;
-  transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.25s ease;
-  margin-top: 0;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
 }
 
 .svc-subpanel.open {
   max-height: 200px;
   opacity: 1;
-  margin-top: 2px;
-  margin-bottom: 4px;
 }
 
 .svc-subpanel-head {
