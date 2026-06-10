@@ -465,10 +465,7 @@ function buildOutput() {
       id: 'port', icon: '🛡️', name: 'PORT', pool: buildPORTPool(),
       note: `PORT (Public Order Response Team) uses the <strong>POR</strong> prefix — not the station code. General units 600–649, SGT 650–659, S/SGT 660–669. POR units operate across the region and are not station-specific.`,
     },
-    {
-      id: 'dss', icon: '🔧', name: 'District Support Services', pool: buildDSSPool(c),
-      note: `District Support uses the station code prefix, range 700–799. Special duties 700–709, regional taskforces 700–729, events/emergency 730–739, foot patrol 740–744, licensing 745–749, bicycle 780–782, court/hospital guards 783–786.`,
-    },
+
     {
       id: 'rru', icon: '⚡', name: 'RRU', pool: buildRRUPool(c),
       note: `RRU (440–449) provides operational support, allocated to specific operations or tasks. Fixed base at ${c}904.`,
@@ -482,16 +479,6 @@ function buildOutput() {
   });
 
   // ── Fixed-size services ────────────────────────────────────────────────────
-  if (S.selected.has('pacer')) sections.push({
-    id: 'pacer', icon: '🧠', name: 'PACER / MHaP', pool: null,
-    units: [
-      { cs: c + '290', desc: 'PACER / MHaP — Morning shift',   shifts: ['MS'] },
-      { cs: c + '291', desc: 'PACER / MHaP — Afternoon shift', shifts: ['AS'] },
-      { cs: c + '292', desc: 'PACER / MHaP — Night shift',     shifts: ['NS'] },
-    ],
-    note: 'Secondary unit for mental health related incidents. Provides on-site clinical assessment, de-escalation advice and referral support. Requested by the initial attending unit. Uses 290–292.',
-  });
-
   if (S.selected.has('fviu')) sections.push({
     id: 'fviu', icon: '🏠', name: 'FVIU', pool: null,
     units: [
@@ -538,19 +525,6 @@ function buildOutput() {
     note: 'RES prefix, range 400–459. Responds to missing persons, bushland searches and maritime incidents. Often activated on callout.',
   });
 
-  if (S.selected.has('transit')) sections.push({
-    id: 'transit', icon: '🚆', name: 'Transit Police (TST)', pool: null,
-    units: [
-      { cs: 'TST271', desc: 'Transit Unit',                    shifts: ['MS', 'AS'] },
-      { cs: 'TST275', desc: 'Transit Unit',                    shifts: ['AS', 'NS'] },
-      { cs: 'TST250', desc: 'Transit Sergeant',                shifts: ['MS', 'AS'] },
-      { cs: 'TST260', desc: 'Transit Senior Sergeant',         shifts: ['MS'] },
-      { cs: 'TST910', desc: 'Metrol Control Centre (fixed)',   shifts: ['FIXED'] },
-      { cs: 'TST912', desc: 'Tram Control Centre (fixed)',     shifts: ['FIXED'] },
-    ],
-    note: 'TST prefix. Units 270–389, SGT 250–259, S/SGT 260–269. Fixed bases: TST910 (Metrol), TST912 (Tram).',
-  });
-
   if (S.selected.has('sog')) sections.push({
     id: 'sog', icon: '🦅', name: 'SOG (Special Operations Group)', pool: null,
     units: [
@@ -572,7 +546,7 @@ function buildOutput() {
   });
 
   if (S.selected.has('polair')) sections.push({
-    id: 'polair', icon: '🚁', name: 'POLAIR', pool: null,
+    id: 'polair', icon: '🚁', name: 'Air Wing', pool: null,
     units: [
       { cs: 'POLAIR30', desc: 'Rotary Wing (Helicopter) — Primary',   shifts: ['MS', 'AS', 'NS'] },
       { cs: 'POLAIR31', desc: 'Rotary Wing (Helicopter) — Secondary', shifts: ['AS', 'NS'] },
