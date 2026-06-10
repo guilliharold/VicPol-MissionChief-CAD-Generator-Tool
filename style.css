@@ -318,7 +318,6 @@ input[type="range"] {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  align-items: start;
 }
 
 @media (max-width: 680px) {
@@ -339,6 +338,9 @@ input[type="range"] {
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  /* Fill the full wrapper height so all cards in a row align */
+  flex: 1;
+  box-sizing: border-box;
 }
 
 .svc-item:hover {
@@ -827,10 +829,14 @@ input[type="range"] {
    Spans the full grid width via grid-column: 1 / -1.
    ============================================================================= */
 
-/* Wrapper — occupies exactly one grid cell; card and sub-panel stack inside */
+/* Wrapper — occupies exactly one grid cell; card and sub-panel stack inside.
+   overflow: hidden ensures a closed sub-panel contributes no height to the
+   wrapper, so grid row stretching sees only the card height. */
 .svc-wrapper {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  border-radius: 7px;
 }
 
 .svc-subpanel {
@@ -842,9 +848,15 @@ input[type="range"] {
   background: var(--surface2);
   border: 1px solid var(--border);
   border-top: none;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 7px 7px;
   overflow: hidden;
   animation: subpanelOpen 0.2s ease;
+}
+
+/* When a sub-panel is open, square off the card's bottom edge so it joins cleanly */
+.svc-wrapper:has(.svc-subpanel.open) .svc-item {
+  border-radius: 7px 7px 0 0;
+  border-bottom-color: transparent;
 }
 
 @keyframes subpanelOpen {
