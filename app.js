@@ -303,7 +303,6 @@ function buildServiceGrid() {
       <div class="svc-check">${S.selected.has(sv.id) ? '✓' : ''}</div>
       <div class="svc-text">
         <div class="svc-name">${sv.icon} ${sv.name}</div>
-        <div class="svc-desc">${sv.desc}</div>
       </div>`;
     el.onclick = () => {
       if (S.selected.has(sv.id)) {
