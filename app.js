@@ -350,7 +350,6 @@ function buildOutput() {
       if (isLarge) {
         supUnits.push({ cs: c + '260', desc: 'Senior Sergeant',               shifts: ['MS', 'AS'] });
         supUnits.push({ cs: c + '265', desc: 'Divisional Supervisor (S/SGT)', shifts: ['MS'] });
-        supUnits.push({ cs: c + '100', desc: 'Superintendent',                shifts: ['MS'] });
       }
       supNote = is24hr
         ? 'Station SGT (250) attends incidents at the request of units already in attendance. District Patrol SGT (251/252) remains on mobile patrol for the duration of the shift.'
@@ -358,17 +357,7 @@ function buildOutput() {
         : 'Station SGT (250) attends incidents at the request of units already in attendance. Non-24-hour stations operate a single District Patrol SGT (251) across available shifts, subject to staffing.';
     }
 
-    // Specialist supervisors — appended when relevant services are selected
-    if (S.selected.has('hwp')) {
-      supUnits.push({ cs: c + '650', desc: 'HWP Sergeant',        shifts: ['MS', 'AS'] });
-      supUnits.push({ cs: c + '651', desc: 'HWP Sergeant',        shifts: ['NS'] });
-      supUnits.push({ cs: c + '661', desc: 'HWP Senior Sergeant', shifts: ['MS'] });
-    }
-    if (S.selected.has('trf')) {
-      supUnits.push({ cs: 'TRF650', desc: 'State Highway Patrol — Sergeant',        shifts: ['MS', 'AS'] });
-      supUnits.push({ cs: 'TRF651', desc: 'State Highway Patrol — Sergeant',        shifts: ['NS'] });
-      supUnits.push({ cs: 'TRF661', desc: 'State Highway Patrol — Senior Sergeant', shifts: ['MS'] });
-    }
+
 
     sections.push({ id: '_sup', icon: '⭐', name: 'Command & Supervision', units: supUnits, pool: null, note: supNote });
   }
@@ -386,12 +375,12 @@ function buildOutput() {
     {
       id: 'hwp', icon: '🚔', name: 'Highway Patrol',
       pool: S.selected.has('hwp_solo') ? [...buildHWPPool(c), ...buildHWPSoloUnits(c)] : buildHWPPool(c),
-      note: `Local Highway Patrol uses the station code prefix. Marked cars 610–629, Q Cars (unmarked) 630–639 — one Q Car per three marked cars. Supervisors (SGT 650, S/SGT 661) appear in <strong>Command & Supervision</strong> above.${S.selected.has('hwp_solo') ? ' Solo motorcycle units (600–601) are included.' : ''}`,
+      note: `Local Highway Patrol uses the station code prefix. Marked cars 610–629, Q Cars 630–639 (1 per 3 marked). SGT 650–659 and S/SGT 660–669 appear at mid counts. Complaints 640–649 and Special Duties 670–699 at higher counts. Fixed base at ${c}906.`,
     },
     {
       id: 'trf', icon: '🚓', name: 'State Highway Patrol',
       pool: S.selected.has('trf_solo') ? [...buildTRFPool(), ...buildTRFSoloUnits()] : buildTRFPool(),
-      note: `State Highway Patrol uses the <strong>TRF</strong> prefix. Marked cars TRF610–629, Q Cars (unmarked) TRF630–639 — one Q Car per three marked cars. Supervisors (TRF650, TRF661) appear in <strong>Command & Supervision</strong> above.${S.selected.has('trf_solo') ? ' Solo motorcycle units (TRF600–603) are included.' : ''}`,
+      note: `State Highway Patrol uses the <strong>TRF</strong> prefix. Marked cars TRF610–629, Q Cars TRF630–639, SGT TRF650–659, S/SGT TRF660–669, Complaints TRF640–649, Special Duties TRF670–699. All unit types appear progressively as the slider increases. Base TRF906.`,
     },
     {
       id: 'ciu', icon: '🔍', name: 'CIU', pool: buildCIUPool(c),
